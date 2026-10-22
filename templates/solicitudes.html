@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Solicitudes | Comité de Investigación{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <h1>Solicitudes</h1>
+    <p class="muted">Registro y seguimiento de solicitudes de investigación.</p>
+  </div>
+  <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+</div>
+<section class="panel">
+  {% if solicitudes %}
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th><th>Título</th><th>Tipo</th><th>Investigador</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for solicitud in solicitudes %}
+        <tr>
+          <td class="code">{{ solicitud["codigo"] }}</td>
+          <td>{{ solicitud["titulo"] }}</td>
+          <td>{{ solicitud["tipo"] }}</td>
+          <td>{{ solicitud["investigador"] }}</td>
+          <td><span class="status">{{ solicitud["estado"] }}</span></td>
+          <td>{{ solicitud["fecha"] }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="button button-secondary button-small" href="{{ url_for('editar_solicitud', id_solicitud=solicitud['id_solicitud']) }}">Editar</a>
+              {% if usuario["rol"] != "Investigador" %}
+              <form action="{{ url_for('eliminar_solicitud', id_solicitud=solicitud['id_solicitud']) }}" method="post" onsubmit="return confirm('¿Eliminar la solicitud?')">
+                <button class="button button-danger button-small" type="submit">Eliminar</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h2>No hay solicitudes</h2>
+    <p class="muted">Las solicitudes registradas aparecerán aquí.</p>
+    <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Crear solicitud</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="login-card">
+  <h1>Comité de Investigación</h1>
+  <p class="muted">Inicie sesión para administrar las solicitudes.</p>
+  <form method="post" class="form-stack">
+    <label for="correo">Correo</label>
+    <input id="correo" name="correo" type="email" autocomplete="username" required>
+    <label for="password">Contraseña</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button class="button button-primary button-wide" type="submit">Iniciar sesión</button>
+  </form>
+  <details class="demo-accounts">
+    <summary>Usuarios demo</summary>
+    <ul>
+      <li>admin@comite.edu.co / admin123 (Administrador)</li>
+      <li>secretaria@comite.edu.co / secre123 (Secretario)</li>
+      <li>comite@comite.edu.co / comite123 (Comité)</li>
+      <li>investigador@comite.edu.co / invest123 (Investigador)</li>
+    </ul>
+  </details>
+</section>
+{% endblock %}

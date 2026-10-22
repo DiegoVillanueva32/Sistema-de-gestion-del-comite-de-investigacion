@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if solicitud else "Nueva" }} solicitud | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="form-card">
+  <div class="page-heading">
+    <div>
+      <h1>{{ "Editar solicitud" if solicitud else "Nueva solicitud" }}</h1>
+      <p class="muted">Los campos marcados con * son obligatorios.</p>
+    </div>
+  </div>
+  <form method="post" class="form-stack">
+    <label for="titulo">Título *</label>
+    <input id="titulo" name="titulo" maxlength="250" value="{{ request.form.get('titulo', solicitud['titulo'] if solicitud else '') }}" required>
+
+    <label for="descripcion">Descripción</label>
+    <textarea id="descripcion" name="descripcion" rows="5">{{ request.form.get('descripcion', solicitud['descripcion'] if solicitud else '') }}</textarea>
+
+    <label for="id_tipo">Tipo *</label>
+    <select id="id_tipo" name="id_tipo" required>
+      <option value="">Seleccione un tipo</option>
+      {% for tipo in tipos %}
+      <option value="{{ tipo['id_tipo'] }}" {% if request.form.get('id_tipo', solicitud['id_tipo'] if solicitud else '')|string == tipo['id_tipo']|string %}selected{% endif %}>{{ tipo["nombre"] }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="estado">Estado</label>
+    {% set estado_actual = request.form.get('estado', solicitud['estado'] if solicitud else 'Recibida') %}
+    <select id="estado" name="estado">
+      {% for estado in estados %}
+      <option value="{{ estado }}" {% if estado_actual == estado %}selected{% endif %}>{{ estado }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-actions">
+      <a class="button button-secondary" href="{{ url_for('solicitudes') }}">Cancelar</a>
+      <button class="button button-primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

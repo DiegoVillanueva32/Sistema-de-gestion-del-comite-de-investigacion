@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if usuario else "Nuevo" }} usuario | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="form-card">
+  <div class="page-heading">
+    <div>
+      <h1>{{ "Editar usuario" if usuario else "Nuevo usuario" }}</h1>
+      <p class="muted">Complete los datos de la cuenta.</p>
+    </div>
+  </div>
+  <form method="post" class="form-stack">
+    <label for="nombre">Nombre *</label>
+    <input id="nombre" name="nombre" value="{{ request.form.get('nombre', usuario['nombre'] if usuario else '') }}" required>
+
+    <label for="correo">Correo *</label>
+    <input id="correo" name="correo" type="email" value="{{ request.form.get('correo', usuario['correo'] if usuario else '') }}" required>
+
+    <label for="password">Contraseña {{ "*" if not usuario else "(dejar vacía para conservarla)" }}</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" {% if not usuario %}required{% endif %}>
+
+    <label for="id_rol">Rol *</label>
+    <select id="id_rol" name="id_rol" required>
+      <option value="">Seleccione un rol</option>
+      {% for rol in roles %}
+      <option value="{{ rol['id_rol'] }}" {% if request.form.get('id_rol', usuario['id_rol'] if usuario else '')|string == rol['id_rol']|string %}selected{% endif %}>{{ rol["nombre"] }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-actions">
+      <a class="button button-secondary" href="{{ url_for('usuarios') }}">Cancelar</a>
+      <button class="button button-primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

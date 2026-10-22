@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="empty-state panel">
+  <p class="eyebrow">Error {{ code }}</p>
+  <h1>{{ message }}</h1>
+  <a class="button button-primary" href="{{ url_for('solicitudes') if session.get('usuario') else url_for('login') }}">Volver</a>
+</section>
+{% endblock %}
