@@ -25,6 +25,9 @@
       <option value="{{ rol['id_rol'] }}" {% if request.form.get('id_rol', usuario['id_rol'] if usuario else '')|string == rol['id_rol']|string %}selected{% endif %}>{{ rol["nombre"] }}</option>
       {% endfor %}
     </select>
+    {% if usuario %}
+    <label class="check"><input type="checkbox" name="activo" value="1" {% if usuario["activo"] %}checked{% endif %}> Cuenta activa</label>
+    {% endif %}
     <div class="form-actions">
       <a class="button button-secondary" href="{{ url_for('usuarios') }}">Cancelar</a>
       <button class="button button-primary" type="submit">Guardar</button>

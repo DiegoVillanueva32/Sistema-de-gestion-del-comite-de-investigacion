@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Registro de investigador | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="login-card wide">
+  <h1>Registro de investigador</h1>
+  <p class="muted">Cree su cuenta para radicar solicitudes ante el Comité de Investigación.</p>
+  <form method="post" class="form-grid">
+    <div class="full">
+      <label for="nombre">Nombre completo *</label>
+      <input id="nombre" name="nombre" value="{{ request.form.get('nombre', '') }}" required>
+    </div>
+    <div>
+      <label for="documento">Documento de identidad *</label>
+      <input id="documento" name="documento" value="{{ request.form.get('documento', '') }}" required>
+    </div>
+    <div>
+      <label for="telefono">Teléfono</label>
+      <input id="telefono" name="telefono" value="{{ request.form.get('telefono', '') }}">
+    </div>
+    <div>
+      <label for="facultad">Facultad</label>
+      <input id="facultad" name="facultad" value="{{ request.form.get('facultad', '') }}">
+    </div>
+    <div>
+      <label for="programa">Programa / grupo de investigación</label>
+      <input id="programa" name="programa" value="{{ request.form.get('programa', '') }}">
+    </div>
+    <div class="full">
+      <label for="correo">Correo institucional *</label>
+      <input id="correo" name="correo" type="email" value="{{ request.form.get('correo', '') }}" autocomplete="username" required>
+    </div>
+    <div>
+      <label for="password">Contraseña * <small class="muted">(mín. 6 caracteres)</small></label>
+      <input id="password" name="password" type="password" minlength="6" autocomplete="new-password" required>
+    </div>
+    <div>
+      <label for="password2">Confirmar contraseña *</label>
+      <input id="password2" name="password2" type="password" minlength="6" autocomplete="new-password" required>
+    </div>
+    <div class="full form-actions">
+      <a class="button button-secondary" href="{{ url_for('login') }}">Volver</a>
+      <button class="button button-primary" type="submit">Registrarme</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="form-card">
+  <div class="page-heading">
+    <div>
+      <h1>Mi perfil</h1>
+      <p class="muted">{{ perfil["correo"] }} · {{ perfil["rol"] }}</p>
+    </div>
+  </div>
+  <form method="post" class="form-grid">
+    <div class="full">
+      <label for="nombre">Nombre completo *</label>
+      <input id="nombre" name="nombre" value="{{ perfil['nombre'] }}" required>
+    </div>
+    {% if perfil["rol"] == "Investigador" %}
+    <div>
+      <label for="documento">Documento de identidad</label>
+      <input id="documento" name="documento" value="{{ perfil['documento'] or '' }}">
+    </div>
+    <div>
+      <label for="telefono">Teléfono</label>
+      <input id="telefono" name="telefono" value="{{ perfil['telefono'] or '' }}">
+    </div>
+    <div>
+      <label for="facultad">Facultad</label>
+      <input id="facultad" name="facultad" value="{{ perfil['facultad'] or '' }}">
+    </div>
+    <div>
+      <label for="programa">Programa / grupo de investigación</label>
+      <input id="programa" name="programa" value="{{ perfil['programa'] or '' }}">
+    </div>
+    {% endif %}
+    <div class="full">
+      <label for="password">Nueva contraseña <small class="muted">(dejar vacía para conservarla)</small></label>
+      <input id="password" name="password" type="password" minlength="6" autocomplete="new-password">
+    </div>
+    <div class="full form-actions">
+      <button class="button button-primary" type="submit">Guardar cambios</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

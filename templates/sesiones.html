@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sesiones | Comité de Investigación{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <h1>Sesiones del comité</h1>
+    <p class="muted">Programación de sesiones, agenda, decisiones y actas.</p>
+  </div>
+  {% if session["usuario"]["rol"] in ROLES_GESTION %}
+  <a class="button button-primary" href="{{ url_for('nueva_sesion') }}">Programar sesión</a>
+  {% endif %}
+</div>
+<section class="panel">
+  {% if sesiones %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Sesión</th><th>Fecha</th><th>Hora</th><th>Lugar</th><th>Estado</th><th>En agenda</th><th>Decisiones</th><th>Acta</th></tr></thead>
+      <tbody>
+        {% for se in sesiones %}
+        <tr>
+          <td class="code"><a href="{{ url_for('detalle_sesion', id_sesion=se['id_sesion']) }}">{{ se["numero"] }}</a></td>
+          <td class="nowrap">{{ se["fecha"] }}</td>
+          <td>{{ se["hora"] or "—" }}</td>
+          <td>{{ se["lugar"] or "—" }}</td>
+          <td><span class="status {{ se['estado']|clase_estado }}">{{ se["estado"] }}</span></td>
+          <td>{{ se["items"] }}</td>
+          <td>{{ se["decisiones"] }}</td>
+          <td>{% if se["id_acta"] %}<a class="link" href="{{ url_for('ver_acta', id_sesion=se['id_sesion']) }}">{{ se["numero_acta"] }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><h2>No hay sesiones registradas</h2><p class="muted">Programe la primera sesión del comité.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

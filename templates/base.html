@@ -8,16 +8,31 @@
 </head>
 <body>
   {% if session.get("usuario") %}
+  {% set rol = session["usuario"]["rol"] %}
+  {% set ep = request.endpoint or "" %}
   <header class="site-header">
-    <a class="brand" href="{{ url_for('solicitudes') }}">Comité de Investigación</a>
+    <a class="brand" href="{{ url_for('dashboard') }}">Comité de Investigación</a>
     <nav aria-label="Navegación principal">
-      <a href="{{ url_for('solicitudes') }}">Solicitudes</a>
-      {% if session["usuario"]["rol"] == "Administrador" %}
-      <a href="{{ url_for('usuarios') }}">Usuarios</a>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep == 'dashboard' }}">Inicio</a>
+      <a href="{{ url_for('solicitudes') }}" class="{{ 'active' if 'solicitud' in ep or 'documento' in ep }}">Solicitudes</a>
+      {% if rol in ROLES_COMITE %}
+      <a href="{{ url_for('sesiones') }}" class="{{ 'active' if 'sesion' in ep or 'acta' in ep or 'agenda' in ep }}">Sesiones</a>
+      {% endif %}
+      <a href="{{ url_for('decisiones') }}" class="{{ 'active' if ep == 'decisiones' }}">Decisiones</a>
+      {% if rol in ROLES_COMITE %}
+      <a href="{{ url_for('reportes') }}" class="{{ 'active' if 'reporte' in ep or 'exportar' in ep }}">Reportes</a>
+      <a href="{{ url_for('investigadores') }}" class="{{ 'active' if ep == 'investigadores' }}">Investigadores</a>
+      {% endif %}
+      {% if rol == "Administrador" %}
+      <a href="{{ url_for('usuarios') }}" class="{{ 'active' if 'usuario' in ep }}">Usuarios</a>
       {% endif %}
     </nav>
     <div class="account">
-      <span>{{ session["usuario"]["nombre"] }} <small>| {{ session["usuario"]["rol"] }}</small></span>
+      <a class="bell" href="{{ url_for('notificaciones') }}" title="Notificaciones" aria-label="Notificaciones">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        {% if notificaciones_pendientes %}<span class="badge">{{ notificaciones_pendientes }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('perfil') }}" class="account-name">{{ session["usuario"]["nombre"] }} <small>| {{ rol }}</small></a>
       <form action="{{ url_for('logout') }}" method="post">
         <button class="button button-danger button-small" type="submit">Salir</button>
       </form>

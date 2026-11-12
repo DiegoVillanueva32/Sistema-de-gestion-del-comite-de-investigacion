@@ -12,7 +12,7 @@
   {% if usuarios %}
   <div class="table-scroll">
     <table>
-      <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr></thead>
+      <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>
         {% for usuario in usuarios %}
         <tr>
@@ -20,6 +20,7 @@
           <td>{{ usuario["nombre"] }}</td>
           <td>{{ usuario["correo"] }}</td>
           <td>{{ usuario["rol"] }}</td>
+          <td><span class="status {{ 'st-ok' if usuario['activo'] else 'st-muted' }}">{{ "Activo" if usuario["activo"] else "Inactivo" }}</span></td>
           <td>
             <div class="table-actions">
               <a class="button button-secondary button-small" href="{{ url_for('editar_usuario', id_usuario=usuario['id_usuario']) }}">Editar</a>

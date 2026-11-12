@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Inicio | Comité de Investigación{% endblock %}
+{% block content %}
+{% set rol = session["usuario"]["rol"] %}
+<div class="page-heading">
+  <div>
+    <h1>Hola, {{ session["usuario"]["nombre"] }}</h1>
+    <p class="muted">{{ "Resumen de sus solicitudes ante el comité." if rol == "Investigador" else "Panel de seguimiento del Comité de Investigación." }}</p>
+  </div>
+  {% if rol == "Investigador" %}
+  <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
+  {% elif rol in ROLES_GESTION %}
+  <a class="button button-primary" href="{{ url_for('nueva_sesion') }}">Programar sesión</a>
+  {% endif %}
+</div>
+
+<section class="kpis">
+  <a class="kpi kpi-total" href="{{ url_for('solicitudes') }}">
+    <span class="kpi-label">Solicitudes recibidas</span>
+    <strong>{{ total }}</strong>
+  </a>
+  {% for estado, n in conteo.items() %}
+  <a class="kpi" href="{{ url_for('solicitudes', estado=estado) }}">
+    <span class="kpi-label"><span class="dot {{ estado|clase_estado }}"></span>{{ estado }}</span>
+    <strong>{{ n }}</strong>
+  </a>
+  {% endfor %}
+</section>
+
+<div class="grid-2">
+  {% if rol in ROLES_COMITE %}
+  <section class="panel">
+    <div class="panel-head"><h2>Mis revisiones pendientes</h2><a class="link small" href="{{ url_for('solicitudes', mias=1) }}">Ver todas</a></div>
+    {% if asignaciones %}
+    <ul class="list">
+      {% for a in asignaciones %}
+      <li>
+        <a href="{{ url_for('detalle_solicitud', id_solicitud=a['id_solicitud']) }}"><span class="code">{{ a["codigo"] }}</span> {{ a["titulo"] }}</a>
+        <span class="small {{ 'text-bad' if a['vencida'] else 'muted' }}">Límite: {{ a["fecha_limite"] or "sin fecha" }}{% if a["vencida"] %} · vencida{% endif %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted pad">No tiene revisiones asignadas pendientes.</p>{% endif %}
+  </section>
+  {% else %}
+  <section class="panel">
+    <div class="panel-head"><h2>Mis solicitudes</h2><a class="link small" href="{{ url_for('solicitudes') }}">Ver todas</a></div>
+    {% if mis_solicitudes %}
+    <ul class="list">
+      {% for s in mis_solicitudes %}
+      <li>
+        <a href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}"><span class="code">{{ s["codigo"] }}</span> {{ s["titulo"] }}</a>
+        <span class="status {{ s['estado']|clase_estado }}">{{ s["estado"] }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted pad">Aún no ha radicado solicitudes.</p>{% endif %}
+  </section>
+  {% endif %}
+
+  <section class="panel">
+    <div class="panel-head"><h2>Próximas sesiones del comité</h2>{% if rol in ROLES_COMITE %}<a class="link small" href="{{ url_for('sesiones') }}">Agenda</a>{% endif %}</div>
+    {% if sesiones %}
+    <ul class="list">
+      {% for se in sesiones %}
+      <li>
+        {% if rol in ROLES_COMITE %}<a href="{{ url_for('detalle_sesion', id_sesion=se['id_sesion']) }}">{% else %}<span>{% endif %}
+          <strong>Sesión {{ se["numero"] }}</strong> · {{ se["fecha"] }} {{ se["hora"] or "" }}
+        {% if rol in ROLES_COMITE %}</a>{% else %}</span>{% endif %}
+        <span class="muted small">{{ se["lugar"] or "Lugar por definir" }} · {{ se["items"] }} en agenda</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted pad">No hay sesiones programadas.</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Solicitudes con fecha vencida</h2><a class="link small" href="{{ url_for('solicitudes', vencidas=1) }}">Ver todas</a></div>
+    {% if vencidas %}
+    <ul class="list">
+      {% for s in vencidas %}
+      <li>
+        <a href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}"><span class="code">{{ s["codigo"] }}</span> {{ s["titulo"] }}</a>
+        <span class="small text-bad">Venció {{ s["fecha_limite"] }} · {{ s["estado"] }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted pad">No hay solicitudes vencidas. ✔</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Actividad reciente</h2></div>
+    {% if actividad %}
+    <ul class="timeline compact">
+      {% for a in actividad %}
+      <li>
+        <span class="muted small">{{ a["fecha"]|fecha(true) }}</span>
+        <div><strong>{{ a["accion"] }}</strong> · <a class="link" href="{{ url_for('detalle_solicitud', id_solicitud=a['id_solicitud']) }}">{{ a["codigo"] }}</a></div>
+        <div class="small muted">{{ a["usuario"] or "Sistema" }}{% if a["detalle"] %} — {{ a["detalle"]|truncate(110) }}{% endif %}</div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted pad">Sin actividad registrada.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

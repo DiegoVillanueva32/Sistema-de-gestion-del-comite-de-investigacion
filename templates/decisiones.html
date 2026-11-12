@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Decisiones | Comité de Investigación{% endblock %}
+{% block content %}
+{% set rol = session["usuario"]["rol"] %}
+<div class="page-heading">
+  <div>
+    <h1>Consulta de decisiones</h1>
+    <p class="muted">{{ "Decisiones del comité sobre sus solicitudes." if rol == "Investigador" else "Decisiones registradas en las sesiones del comité." }}</p>
+  </div>
+  {% if rol in ROLES_COMITE %}<a class="button button-secondary" href="{{ url_for('exportar_decisiones') }}">Exportar CSV</a>{% endif %}
+</div>
+<form class="filters panel" method="get">
+  <input name="q" placeholder="Buscar por código, título o investigador" value="{{ request.args.get('q', '') }}">
+  <select name="decision">
+    <option value="">Todas las decisiones</option>
+    {% for o in opciones %}<option {% if request.args.get('decision') == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+  </select>
+  <button class="button button-secondary" type="submit">Filtrar</button>
+</form>
+<section class="panel">
+  {% if decisiones %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Fecha</th><th>Sesión</th><th>Solicitud</th><th>Tipo</th><th>Investigador</th><th>Decisión</th><th>Observación</th></tr></thead>
+      <tbody>
+        {% for d in decisiones %}
+        <tr>
+          <td class="nowrap">{{ d["fecha"]|fecha }}</td>
+          <td>{% if rol in ROLES_COMITE and d["id_sesion"] %}<a class="link" href="{{ url_for('detalle_sesion', id_sesion=d['id_sesion']) }}">{{ d["sesion"] }}</a>{% else %}{{ d["sesion"] or "—" }}{% endif %}</td>
+          <td><a class="code" href="{{ url_for('detalle_solicitud', id_solicitud=d['id_solicitud']) }}">{{ d["codigo"] }}</a> {{ d["titulo"] }}</td>
+          <td>{{ d["tipo"] }}</td>
+          <td>{{ d["investigador"] }}</td>
+          <td><span class="status {{ d['decision']|clase_estado }}">{{ d["decision"] }}</span></td>
+          <td class="small">{{ d["observacion"] or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><h2>No hay decisiones</h2><p class="muted">Las decisiones del comité aparecerán aquí.</p></div>
+  {% endif %}
+</section>
+
+{% if actas %}
+<section class="panel section mt">
+  <h2>Actas generadas</h2>
+  <ul class="list tight">
+    {% for a in actas %}
+    <li><a class="link" href="{{ url_for('ver_acta', id_sesion=a['id_sesion']) }}">{{ a["numero"] }}</a> <span class="muted small">Sesión {{ a["sesion"] }} · {{ a["fecha"] }} · v{{ a["version"] }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

@@ -4,48 +4,65 @@
 <div class="page-heading">
   <div>
     <h1>Solicitudes</h1>
-    <p class="muted">Registro y seguimiento de solicitudes de investigación.</p>
+    <p class="muted">Radicación, seguimiento y consulta del historial de solicitudes.</p>
   </div>
-  <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+  {% if usuario["rol"] == "Investigador" %}
+  <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
+  {% endif %}
 </div>
+
+<form class="filters panel" method="get">
+  <input name="q" placeholder="Buscar por código, título o investigador" value="{{ request.args.get('q', '') }}">
+  <select name="estado">
+    <option value="">Todos los estados</option>
+    {% for e in estados %}<option {% if request.args.get('estado') == e %}selected{% endif %}>{{ e }}</option>{% endfor %}
+  </select>
+  <select name="id_tipo">
+    <option value="">Todos los tipos</option>
+    {% for t in tipos %}<option value="{{ t['id_tipo'] }}" {% if request.args.get('id_tipo') == t['id_tipo']|string %}selected{% endif %}>{{ t["nombre"] }}</option>{% endfor %}
+  </select>
+  <label class="check"><input type="checkbox" name="vencidas" value="1" {% if request.args.get('vencidas') == '1' %}checked{% endif %}> Vencidas</label>
+  {% if usuario["rol"] in ROLES_COMITE %}
+  <label class="check"><input type="checkbox" name="mias" value="1" {% if request.args.get('mias') == '1' %}checked{% endif %}> Asignadas a mí</label>
+  {% endif %}
+  <button class="button button-secondary" type="submit">Filtrar</button>
+  {% if request.args %}<a class="link small" href="{{ url_for('solicitudes') }}">Limpiar</a>{% endif %}
+</form>
+
 <section class="panel">
   {% if solicitudes %}
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
-          <th>Código</th><th>Título</th><th>Tipo</th><th>Investigador</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+          <th>Código</th><th>Título</th><th>Tipo</th><th>Investigador</th><th>Estado</th><th>Prioridad</th><th>Radicación</th><th>Fecha límite</th><th>Responsables</th>
         </tr>
       </thead>
       <tbody>
-        {% for solicitud in solicitudes %}
+        {% for s in solicitudes %}
         <tr>
-          <td class="code">{{ solicitud["codigo"] }}</td>
-          <td>{{ solicitud["titulo"] }}</td>
-          <td>{{ solicitud["tipo"] }}</td>
-          <td>{{ solicitud["investigador"] }}</td>
-          <td><span class="status">{{ solicitud["estado"] }}</span></td>
-          <td>{{ solicitud["fecha"] }}</td>
-          <td>
-            <div class="table-actions">
-              <a class="button button-secondary button-small" href="{{ url_for('editar_solicitud', id_solicitud=solicitud['id_solicitud']) }}">Editar</a>
-              {% if usuario["rol"] != "Investigador" %}
-              <form action="{{ url_for('eliminar_solicitud', id_solicitud=solicitud['id_solicitud']) }}" method="post" onsubmit="return confirm('¿Eliminar la solicitud?')">
-                <button class="button button-danger button-small" type="submit">Eliminar</button>
-              </form>
-              {% endif %}
-            </div>
-          </td>
+          <td class="code"><a href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}">{{ s["codigo"] }}</a></td>
+          <td><a class="link-plain" href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}">{{ s["titulo"] }}</a></td>
+          <td>{{ s["tipo"] }}</td>
+          <td>{{ s["investigador"] }}</td>
+          <td><span class="status {{ s['estado']|clase_estado }}">{{ s["estado"] }}</span></td>
+          <td><span class="prio prio-{{ s['prioridad']|lower }}">{{ s["prioridad"] }}</span></td>
+          <td class="nowrap">{{ s["fecha"]|fecha }}</td>
+          <td class="nowrap {{ 'text-bad' if s['vencida'] }}">{{ s["fecha_limite"] or "—" }}{% if s["vencida"] %} ⚠{% endif %}</td>
+          <td class="small">{{ s["responsables"] or "—" }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  <p class="muted small pad">{{ solicitudes|length }} solicitud(es).</p>
   {% else %}
   <div class="empty-state">
     <h2>No hay solicitudes</h2>
-    <p class="muted">Las solicitudes registradas aparecerán aquí.</p>
-    <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Crear solicitud</a>
+    <p class="muted">Las solicitudes que coincidan con los filtros aparecerán aquí.</p>
+    {% if usuario["rol"] == "Investigador" %}
+    <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
+    {% endif %}
   </div>
   {% endif %}
 </section>

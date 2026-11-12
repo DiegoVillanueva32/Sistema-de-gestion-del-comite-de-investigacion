@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if sesion_c else "Programar" }} sesión | Comité de Investigación{% endblock %}
+{% block content %}
+<section class="form-card">
+  <div class="page-heading">
+    <div>
+      <h1>{{ "Editar sesión " ~ sesion_c["numero"] if sesion_c else "Programar sesión" }}</h1>
+      <p class="muted">Al programar una sesión se notifica a los integrantes del comité.</p>
+    </div>
+  </div>
+  <form method="post" class="form-grid">
+    <div>
+      <label for="numero">Número de sesión *</label>
+      <input id="numero" name="numero" value="{{ request.form.get('numero', sesion_c['numero'] if sesion_c else numero_sugerido) }}" required>
+    </div>
+    <div>
+      <label for="estado">Estado</label>
+      {% set est = request.form.get('estado', sesion_c['estado'] if sesion_c else 'Programada') %}
+      <select id="estado" name="estado">
+        {% for e in estados %}<option {% if est == e %}selected{% endif %}>{{ e }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="fecha">Fecha *</label>
+      <input id="fecha" name="fecha" type="date" value="{{ request.form.get('fecha', sesion_c['fecha'] if sesion_c else '') }}" required>
+    </div>
+    <div>
+      <label for="hora">Hora</label>
+      <input id="hora" name="hora" type="time" value="{{ request.form.get('hora', sesion_c['hora'] if sesion_c else '') or '' }}">
+    </div>
+    <div class="full">
+      <label for="lugar">Lugar o enlace</label>
+      <input id="lugar" name="lugar" value="{{ request.form.get('lugar', sesion_c['lugar'] if sesion_c else '') or '' }}" placeholder="Sala de juntas, bloque B / enlace de la reunión virtual">
+    </div>
+    <div class="full form-actions">
+      <a class="button button-secondary" href="{{ url_for('detalle_sesion', id_sesion=sesion_c['id_sesion']) if sesion_c else url_for('sesiones') }}">Cancelar</a>
+      <button class="button button-primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
