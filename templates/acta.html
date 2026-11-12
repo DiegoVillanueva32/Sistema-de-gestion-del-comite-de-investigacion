@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ acta["numero"] }} | Comité de Investigación{% endblock %}
+{% block content %}
+<p class="crumbs no-print"><a class="link" href="{{ url_for('sesiones') }}">Sesiones</a> / <a class="link" href="{{ url_for('detalle_sesion', id_sesion=sesion_c['id_sesion']) }}">{{ sesion_c["numero"] }}</a> / Acta</p>
+<div class="page-heading no-print">
+  <div>
+    <h1>{{ acta["numero"] }}</h1>
+    <p class="muted">Versión {{ acta["version"] }} · generada {{ acta["fecha_generacion"]|fecha(true) }}{% if acta["generada_por"] %} por {{ acta["generada_por"] }}{% endif %}</p>
+  </div>
+  <div class="heading-actions">
+    <a class="button button-secondary" href="{{ url_for('descargar_acta', id_sesion=sesion_c['id_sesion']) }}">Descargar .txt</a>
+    <button class="button button-primary" type="button" onclick="window.print()">Imprimir / PDF</button>
+  </div>
+</div>
+<article class="acta panel">
+  <pre>{{ acta["contenido"] }}</pre>
+</article>
+{% endblock %}

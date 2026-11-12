@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones | Comité de Investigación{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <h1>Notificaciones</h1>
+    <p class="muted">Avisos sobre cambios de estado, asignaciones, ajustes, sesiones y decisiones.</p>
+  </div>
+  {% if notificaciones_pendientes %}
+  <form method="post" action="{{ url_for('leer_notificaciones') }}">
+    <button class="button button-secondary" type="submit">Marcar todas como leídas</button>
+  </form>
+  {% endif %}
+</div>
+<section class="panel">
+  {% if notificaciones %}
+  <ul class="list notif">
+    {% for n in notificaciones %}
+    <li class="{{ 'unread' if not n['leida'] }}">
+      <a href="{{ url_for('abrir_notificacion', id_notificacion=n['id_notificacion']) }}">{{ n["mensaje"] }}</a>
+      <span class="small muted nowrap">{{ n["fecha"]|fecha(true) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state"><h2>Sin notificaciones</h2></div>
+  {% endif %}
+</section>
+{% endblock %}

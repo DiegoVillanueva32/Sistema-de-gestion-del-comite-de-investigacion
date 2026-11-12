@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Investigadores | Comité de Investigación{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <h1>Investigadores registrados</h1>
+    <p class="muted">Los investigadores se registran desde la página de inicio de sesión.</p>
+  </div>
+</div>
+<form class="filters panel" method="get">
+  <input name="q" placeholder="Buscar por nombre, correo, documento o programa" value="{{ request.args.get('q', '') }}">
+  <button class="button button-secondary" type="submit">Buscar</button>
+</form>
+<section class="panel">
+  {% if investigadores %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Nombre</th><th>Correo</th><th>Documento</th><th>Programa</th><th>Facultad</th><th>Teléfono</th><th>Solicitudes</th><th>Aprobadas</th></tr></thead>
+      <tbody>
+        {% for i in investigadores %}
+        <tr>
+          <td>{{ i["nombre"] }}{% if not i["activo"] %} <span class="status st-muted">Inactivo</span>{% endif %}</td>
+          <td>{{ i["correo"] }}</td>
+          <td>{{ i["documento"] or "—" }}</td>
+          <td>{{ i["programa"] or "—" }}</td>
+          <td>{{ i["facultad"] or "—" }}</td>
+          <td>{{ i["telefono"] or "—" }}</td>
+          <td><a class="link" href="{{ url_for('solicitudes', q=i['nombre']) }}">{{ i["solicitudes"] }}</a></td>
+          <td>{{ i["aprobadas"]|int }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><h2>No hay investigadores</h2></div>
+  {% endif %}
+</section>
+{% endblock %}

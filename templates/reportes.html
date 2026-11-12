@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Reportes | Comité de Investigación{% endblock %}
+
+{% macro barras(filas, campo="total") %}
+  {% set maximo = (filas|map(attribute=campo)|map("int")|max) if filas else 0 %}
+  {% if filas %}
+  <ul class="bars">
+    {% for f in filas %}
+    <li>
+      <span class="bar-label">{{ f["etiqueta"] }}</span>
+      <span class="bar-track"><span class="bar-fill" style="width: {{ ((f[campo]|int) / maximo * 100) if maximo else 0 }}%"></span></span>
+      <span class="bar-value">{{ f[campo]|int }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">Sin datos.</p>{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="page-heading">
+  <div>
+    <h1>Reportes</h1>
+    <p class="muted">Indicadores del trámite de solicitudes y de la gestión del comité.</p>
+  </div>
+  <div class="heading-actions no-print">
+    <a class="button button-secondary" href="{{ url_for('exportar_solicitudes', desde=desde or '', hasta=hasta or '') }}">Exportar solicitudes CSV</a>
+    <a class="button button-secondary" href="{{ url_for('exportar_decisiones') }}">Exportar decisiones CSV</a>
+    <button class="button button-primary" type="button" onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+
+<form class="filters panel no-print" method="get">
+  <label class="check">Radicadas desde <input type="date" name="desde" value="{{ desde or '' }}"></label>
+  <label class="check">hasta <input type="date" name="hasta" value="{{ hasta or '' }}"></label>
+  <button class="button button-secondary" type="submit">Aplicar</button>
+  {% if desde or hasta %}<a class="link small" href="{{ url_for('reportes') }}">Quitar filtro</a>{% endif %}
+</form>
+
+<section class="kpis">
+  <div class="kpi kpi-total"><span class="kpi-label">Solicitudes recibidas</span><strong>{{ total }}</strong></div>
+  {% for estado, n in conteo.items() %}
+  <a class="kpi" href="{{ url_for('solicitudes', estado=estado) }}"><span class="kpi-label"><span class="dot {{ estado|clase_estado }}"></span>{{ estado }}</span><strong>{{ n }}</strong></a>
+  {% endfor %}
+</section>
+
+<section class="kpis kpis-small">
+  <div class="kpi"><span class="kpi-label">Tiempo promedio hasta decisión</span><strong>{{ r["tiempo_promedio"] if r["tiempo_promedio"] is not none else "—" }}</strong><span class="small muted">días ({{ r["decididas"] }} decididas)</span></div>
+  <div class="kpi"><span class="kpi-label">Tasa de aprobación</span>
+    {% set aprob = conteo["Aprobada"] + conteo["Aprobada con ajustes"] %}{% set decid = aprob + conteo["Rechazada"] %}
+    <strong>{{ ((aprob / decid * 100)|round|int ~ "%") if decid else "—" }}</strong><span class="small muted">de las solicitudes decididas</span></div>
+  <div class="kpi"><span class="kpi-label">Sesiones realizadas</span><strong>{{ r["sesiones"]["realizadas"] or 0 }}</strong><span class="small muted">{{ r["sesiones"]["programadas"] or 0 }} programadas</span></div>
+  <div class="kpi"><span class="kpi-label">Actas generadas</span><strong>{{ r["sesiones"]["actas"] or 0 }}</strong></div>
+  <div class="kpi"><span class="kpi-label">Solicitudes vencidas</span><strong class="{{ 'text-bad' if vencidas }}">{{ vencidas|length }}</strong></div>
+</section>
+
+<div class="grid-2">
+  <section class="panel section"><h2>Solicitudes por tipo</h2>{{ barras(r["por_tipo"]) }}</section>
+  <section class="panel section"><h2>Radicación por mes</h2>{{ barras(r["por_mes"]) }}</section>
+  <section class="panel section"><h2>Decisiones del comité</h2>{{ barras(r["por_decision"]) }}</section>
+  <section class="panel section"><h2>Solicitudes por programa</h2>{{ barras(r["por_programa"]) }}</section>
+</div>
+
+<section class="panel section mt">
+  <h2>Aprobación por tipo de solicitud</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Tipo</th><th>Total</th><th>Aprobadas</th><th>Rechazadas</th></tr></thead>
+      <tbody>
+        {% for t in r["por_tipo"] %}
+        <tr><td>{{ t["etiqueta"] }}</td><td>{{ t["total"] }}</td><td>{{ t["aprobadas"]|int }}</td><td>{{ t["rechazadas"]|int }}</td></tr>
+        {% else %}<tr><td colspan="4" class="muted">Sin datos.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel section mt">
+  <h2>Carga de revisión por integrante</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Integrante</th><th>Pendientes</th><th>Completadas</th><th>Vencidas</th></tr></thead>
+      <tbody>
+        {% for c in r["carga"] %}
+        <tr><td>{{ c["etiqueta"] }}</td><td>{{ c["pendientes"]|int }}</td><td>{{ c["completadas"]|int }}</td><td class="{{ 'text-bad' if c['vencidas']|int }}">{{ c["vencidas"]|int }}</td></tr>
+        {% else %}<tr><td colspan="4" class="muted">Sin asignaciones registradas.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if vencidas %}
+<section class="panel section mt">
+  <h2>Solicitudes con fecha límite vencida</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Código</th><th>Título</th><th>Estado</th><th>Fecha límite</th><th>Responsables</th></tr></thead>
+      <tbody>
+        {% for s in vencidas %}
+        <tr><td class="code"><a href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}">{{ s["codigo"] }}</a></td><td>{{ s["titulo"] }}</td>
+          <td><span class="status {{ s['estado']|clase_estado }}">{{ s["estado"] }}</span></td><td class="text-bad">{{ s["fecha_limite"] }}</td><td class="small">{{ s["responsables"] or "—" }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

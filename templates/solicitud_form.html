@@ -1,39 +1,68 @@
 {% extends "base.html" %}
-{% block title %}{{ "Editar" if solicitud else "Nueva" }} solicitud | Comité de Investigación{% endblock %}
+{% block title %}{{ "Editar" if solicitud else "Radicar" }} solicitud | Comité de Investigación{% endblock %}
 {% block content %}
+{% set rol = session["usuario"]["rol"] %}
 <section class="form-card">
   <div class="page-heading">
     <div>
-      <h1>{{ "Editar solicitud" if solicitud else "Nueva solicitud" }}</h1>
-      <p class="muted">Los campos marcados con * son obligatorios.</p>
+      <h1>{{ "Editar solicitud " ~ solicitud["codigo"] if solicitud else "Radicar solicitud" }}</h1>
+      <p class="muted">Los campos marcados con * son obligatorios.{% if not solicitud %} Después de radicar podrá cargar los documentos requeridos.{% endif %}</p>
     </div>
   </div>
   <form method="post" class="form-stack">
-    <label for="titulo">Título *</label>
-    <input id="titulo" name="titulo" maxlength="250" value="{{ request.form.get('titulo', solicitud['titulo'] if solicitud else '') }}" required>
-
-    <label for="descripcion">Descripción</label>
-    <textarea id="descripcion" name="descripcion" rows="5">{{ request.form.get('descripcion', solicitud['descripcion'] if solicitud else '') }}</textarea>
-
-    <label for="id_tipo">Tipo *</label>
+    <label for="id_tipo">Tipo de solicitud *</label>
+    {% set tipo_sel = request.form.get('id_tipo', solicitud['id_tipo'] if solicitud else '')|string %}
     <select id="id_tipo" name="id_tipo" required>
       <option value="">Seleccione un tipo</option>
       {% for tipo in tipos %}
-      <option value="{{ tipo['id_tipo'] }}" {% if request.form.get('id_tipo', solicitud['id_tipo'] if solicitud else '')|string == tipo['id_tipo']|string %}selected{% endif %}>{{ tipo["nombre"] }}</option>
+      <option value="{{ tipo['id_tipo'] }}" {% if tipo_sel == tipo['id_tipo']|string %}selected{% endif %}>{{ tipo["nombre"] }}</option>
       {% endfor %}
     </select>
+    <div class="requisitos-ayuda">
+      {% for tipo in tipos %}
+      <div class="req-box" data-tipo="{{ tipo['id_tipo'] }}" {% if tipo_sel != tipo['id_tipo']|string %}hidden{% endif %}>
+        <strong>Documentos requeridos para «{{ tipo["nombre"] }}»:</strong>
+        <ul>
+          {% for r in tipo["requisitos"] %}
+          <li>{{ r["nombre"] }}{% if not r["obligatorio"] %} <span class="muted">(opcional)</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
 
-    <label for="estado">Estado</label>
-    {% set estado_actual = request.form.get('estado', solicitud['estado'] if solicitud else 'Recibida') %}
-    <select id="estado" name="estado">
-      {% for estado in estados %}
-      <option value="{{ estado }}" {% if estado_actual == estado %}selected{% endif %}>{{ estado }}</option>
-      {% endfor %}
-    </select>
+    <label for="titulo">Título *</label>
+    <input id="titulo" name="titulo" maxlength="250" value="{{ request.form.get('titulo', solicitud['titulo'] if solicitud else '') }}" required>
+
+    <label for="descripcion">Resumen / descripción</label>
+    <textarea id="descripcion" name="descripcion" rows="6">{{ request.form.get('descripcion', solicitud['descripcion'] if solicitud else '') or '' }}</textarea>
+
+    {% if rol in ROLES_GESTION or not solicitud %}
+    <div class="form-row">
+      <div>
+        <label for="prioridad">Prioridad</label>
+        {% set prio = request.form.get('prioridad', solicitud['prioridad'] if solicitud else 'Media') %}
+        <select id="prioridad" name="prioridad">
+          {% for p in prioridades %}<option {% if prio == p %}selected{% endif %}>{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="fecha_limite">{{ "Fecha límite de respuesta" if rol in ROLES_GESTION else "Fecha en que necesita respuesta" }}</label>
+        <input id="fecha_limite" name="fecha_limite" type="date" value="{{ request.form.get('fecha_limite', solicitud['fecha_limite'] if solicitud else '') or '' }}">
+      </div>
+    </div>
+    {% endif %}
     <div class="form-actions">
-      <a class="button button-secondary" href="{{ url_for('solicitudes') }}">Cancelar</a>
-      <button class="button button-primary" type="submit">Guardar</button>
+      <a class="button button-secondary" href="{{ url_for('detalle_solicitud', id_solicitud=solicitud['id_solicitud']) if solicitud else url_for('solicitudes') }}">Cancelar</a>
+      <button class="button button-primary" type="submit">{{ "Guardar" if solicitud else "Radicar" }}</button>
     </div>
   </form>
 </section>
+<script>
+  document.getElementById("id_tipo").addEventListener("change", function () {
+    document.querySelectorAll(".req-box").forEach(function (box) {
+      box.hidden = box.dataset.tipo !== this.value;
+    }, this);
+  });
+</script>
 {% endblock %}

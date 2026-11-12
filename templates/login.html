@@ -3,7 +3,7 @@
 {% block content %}
 <section class="login-card">
   <h1>Comité de Investigación</h1>
-  <p class="muted">Inicie sesión para administrar las solicitudes.</p>
+  <p class="muted">Sistema de gestión de solicitudes, sesiones y actas del comité.</p>
   <form method="post" class="form-stack">
     <label for="correo">Correo</label>
     <input id="correo" name="correo" type="email" autocomplete="username" required>
@@ -11,6 +11,7 @@
     <input id="password" name="password" type="password" autocomplete="current-password" required>
     <button class="button button-primary button-wide" type="submit">Iniciar sesión</button>
   </form>
+  <p class="center muted small">¿Es investigador y no tiene cuenta? <a class="link" href="{{ url_for('registro') }}">Regístrese aquí</a></p>
   <details class="demo-accounts">
     <summary>Usuarios demo</summary>
     <ul>
