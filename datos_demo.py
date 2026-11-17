@@ -16,6 +16,9 @@ class ArchivoDemo:
     def __init__(self, texto):
         self.texto = texto
 
+    def read(self):
+        return self.texto.encode("utf-8")
+
     def save(self, ruta):
         with io.open(ruta, "w", encoding="utf-8") as f:
             f.write(self.texto)

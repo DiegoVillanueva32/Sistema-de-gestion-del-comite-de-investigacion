@@ -31,8 +31,13 @@
 
 <section class="panel">
   {% if solicitudes %}
+  <div class="table-tools">
+    <input type="search" placeholder="Filtrar en estos resultados…" aria-label="Filtrar tabla" data-filter-table="tabla-solicitudes">
+    <span data-filter-count></span>
+    <span class="hint">Clic en un encabezado para ordenar</span>
+  </div>
   <div class="table-scroll">
-    <table>
+    <table id="tabla-solicitudes" data-sortable>
       <thead>
         <tr>
           <th>Código</th><th>Título</th><th>Tipo</th><th>Investigador</th><th>Estado</th><th>Prioridad</th><th>Radicación</th><th>Fecha límite</th><th>Responsables</th>
@@ -55,7 +60,6 @@
       </tbody>
     </table>
   </div>
-  <p class="muted small pad">{{ solicitudes|length }} solicitud(es).</p>
   {% else %}
   <div class="empty-state">
     <h2>No hay solicitudes</h2>

@@ -7,15 +7,15 @@
   <form method="post" class="form-grid">
     <div class="full">
       <label for="nombre">Nombre completo *</label>
-      <input id="nombre" name="nombre" value="{{ request.form.get('nombre', '') }}" required>
+      <input id="nombre" name="nombre" minlength="3" value="{{ request.form.get('nombre', '') }}" required>
     </div>
     <div>
       <label for="documento">Documento de identidad *</label>
-      <input id="documento" name="documento" value="{{ request.form.get('documento', '') }}" required>
+      <input id="documento" name="documento" pattern="[0-9A-Za-z]{5,15}" data-msg="Use de 5 a 15 letras o números, sin puntos ni espacios." value="{{ request.form.get('documento', '') }}" required>
     </div>
     <div>
       <label for="telefono">Teléfono</label>
-      <input id="telefono" name="telefono" value="{{ request.form.get('telefono', '') }}">
+      <input id="telefono" name="telefono" type="tel" pattern="[0-9+ ]{7,15}" data-msg="Escriba un teléfono de 7 a 15 dígitos." value="{{ request.form.get('telefono', '') }}">
     </div>
     <div>
       <label for="facultad">Facultad</label>
@@ -35,7 +35,7 @@
     </div>
     <div>
       <label for="password2">Confirmar contraseña *</label>
-      <input id="password2" name="password2" type="password" minlength="6" autocomplete="new-password" required>
+      <input id="password2" name="password2" type="password" minlength="6" data-match="password" autocomplete="new-password" required>
     </div>
     <div class="full form-actions">
       <a class="button button-secondary" href="{{ url_for('login') }}">Volver</a>

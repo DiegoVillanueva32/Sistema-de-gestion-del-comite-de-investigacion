@@ -22,7 +22,7 @@
     </div>
     <div>
       <label for="fecha">Fecha *</label>
-      <input id="fecha" name="fecha" type="date" value="{{ request.form.get('fecha', sesion_c['fecha'] if sesion_c else '') }}" required>
+      <input id="fecha" name="fecha" type="date" {% if not sesion_c %}data-min-date="today"{% endif %} value="{{ request.form.get('fecha', sesion_c['fecha'] if sesion_c else '') }}" required>
     </div>
     <div>
       <label for="hora">Hora</label>

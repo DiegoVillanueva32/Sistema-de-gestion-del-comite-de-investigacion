@@ -16,7 +16,7 @@
   <div class="heading-actions">
     {% if puede_editar %}<a class="button button-secondary" href="{{ url_for('editar_solicitud', id_solicitud=s['id_solicitud']) }}">Editar</a>{% endif %}
     {% if puede_gestionar %}
-    <form action="{{ url_for('eliminar_solicitud', id_solicitud=s['id_solicitud']) }}" method="post" onsubmit="return confirm('¿Eliminar la solicitud y todo su historial? Esta acción no se puede deshacer.')">
+    <form action="{{ url_for('eliminar_solicitud', id_solicitud=s['id_solicitud']) }}" method="post" data-confirm="Se eliminará la solicitud con sus documentos e historial. Esta acción no se puede deshacer.">
       <button class="button button-danger" type="submit">Eliminar</button>
     </form>
     {% endif %}
@@ -119,7 +119,7 @@
           {% for r in requisitos %}<option value="{{ r['id_requisito'] }}">{{ r["nombre"] }}</option>{% endfor %}
           <option value="">Documento adicional</option>
         </select>
-        <input type="file" name="archivo" required aria-label="Archivo">
+        <input type="file" name="archivo" required aria-label="Archivo" data-max-mb="16" data-ext="{{ extensiones|replace(' ', '') }}" accept=".{{ extensiones|replace(' ', '')|replace(',', ',.') }}">
         <button class="button button-primary" type="submit">Cargar</button>
         <span class="small muted full">Formatos: {{ extensiones }}. Máximo 16 MB. Si carga de nuevo un requisito se guarda como nueva versión.</span>
       </form>
