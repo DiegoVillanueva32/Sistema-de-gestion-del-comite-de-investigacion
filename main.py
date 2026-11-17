@@ -691,6 +691,26 @@ def api_buscar():
     return jsonify(resultados=resultados)
 
 
+@app.get("/salud")
+def salud():
+    """Diagnóstico del despliegue: indica si hay conexión con la base (sin exponer credenciales)."""
+    estado = {
+        "app": "ok",
+        "configuracion": "DATABASE_URL" if os.environ.get("DATABASE_URL") else (
+            "MYSQL_*" if os.environ.get("MYSQL_HOST") else "sin variables (usa 127.0.0.1)"),
+        "host_bd": models.MYSQL_HOST,
+    }
+    try:
+        with models.db() as conn:
+            estado["usuarios"] = models._one(conn, "SELECT COUNT(*) AS n FROM usuario")["n"]
+        estado["bd"] = "ok"
+        return jsonify(estado)
+    except Exception as error:  # noqa: BLE001 - se informa el tipo de error para diagnosticar
+        estado["bd"] = "error"
+        estado["error"] = f"{type(error).__name__}: {getattr(error, 'msg', '') or str(error)[:120]}"
+        return jsonify(estado), 503
+
+
 @app.get("/notificaciones/<int:id_notificacion>")
 @login_required
 def abrir_notificacion(id_notificacion):
