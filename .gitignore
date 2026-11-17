@@ -12,3 +12,4 @@ node_modules/
 
 # Credenciales de la base en la nube (nunca subir)
 credenciales_nube.txt
+usuarios_demo.txt
