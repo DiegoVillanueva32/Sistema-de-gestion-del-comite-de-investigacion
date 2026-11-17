@@ -10,3 +10,4 @@ src/
 package.json
 package-lock.json
 tailwind.config.js
+credenciales_nube.txt

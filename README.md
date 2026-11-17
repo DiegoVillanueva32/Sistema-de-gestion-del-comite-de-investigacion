@@ -137,7 +137,13 @@ npm run build:css      # o: npm run watch:css mientras desarrollas
 Vercel no puede conectarse a un MySQL instalado en tu computador, así que la base debe estar en la nube (por ejemplo **Aiven for MySQL**, plan gratuito).
 
 1. Crea un servicio MySQL en la nube y copia sus datos de conexión (host, puerto, usuario, contraseña, base; en Aiven la base es `defaultdb`).
-2. Crea las tablas y los usuarios demo **desde tu computador**, apuntando a la base en la nube (en PowerShell):
+2. Crea las tablas y los usuarios demo **desde tu computador**. Pega los datos de conexión en `credenciales_nube.txt` (archivo ignorado por git; si no existe, créalo con las mismas variables de `.env.example`) y ejecuta:
+
+   ```powershell
+   python iniciar_nube.py --demo     # --demo también carga el escenario de demostración
+   ```
+
+   O manualmente, con variables de entorno (en PowerShell):
 
    ```powershell
    $env:MYSQL_HOST="<host>"; $env:MYSQL_PORT="<puerto>"; $env:MYSQL_USER="<usuario>"
