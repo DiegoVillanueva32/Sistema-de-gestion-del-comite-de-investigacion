@@ -24,9 +24,13 @@ def cargar_credenciales():
             if linea and not linea.startswith("#") and "=" in linea:
                 clave, valor = linea.split("=", 1)
                 datos[clave.strip()] = valor.strip().strip('"').strip("'")
-    faltan = [c for c in OBLIGATORIAS if not datos.get(c)]
-    if faltan:
-        sys.exit("Faltan datos en credenciales_nube.txt: " + ", ".join(faltan))
+    if datos.get("DATABASE_URL"):
+        if "${{" in datos["DATABASE_URL"] or not datos["DATABASE_URL"].startswith("mysql://"):
+            sys.exit("DATABASE_URL no es válida: debe empezar con mysql:// y no contener ${{...}}.")
+    else:
+        faltan = [c for c in OBLIGATORIAS if not datos.get(c)]
+        if faltan:
+            sys.exit("Falta DATABASE_URL (o los datos " + ", ".join(faltan) + ") en credenciales_nube.txt")
     # Se definen ANTES de importar models para que tengan prioridad sobre el .env local.
     os.environ.update(datos)
     return datos
@@ -34,9 +38,9 @@ def cargar_credenciales():
 
 def main():
     datos = cargar_credenciales()
-    print(f"Conectando a {datos['MYSQL_HOST']}:{datos['MYSQL_PORT']} (base {datos['MYSQL_DATABASE']})...")
     import models
 
+    print(f"Conectando a {models.MYSQL_HOST}:{models.MYSQL_PORT} (base {models.MYSQL_DATABASE})...")
     models.init_db()
     print("Tablas, roles, tipos de solicitud y usuarios demo listos.")
     if "--demo" in sys.argv:

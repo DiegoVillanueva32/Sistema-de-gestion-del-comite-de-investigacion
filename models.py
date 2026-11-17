@@ -29,6 +29,33 @@ def _cargar_env(ruta=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".
 
 _cargar_env()
 
+
+def _usar_url_de_conexion():
+    """Permite configurar la base con una sola URL (DATABASE_URL=mysql://usuario:clave@host:puerto/base).
+
+    Es el formato que entregan Railway, Aiven y otros proveedores; si existe, tiene prioridad
+    sobre las variables MYSQL_* sueltas.
+    """
+    url = os.environ.get("DATABASE_URL", "").strip()
+    if not url:
+        return
+    if "${{" in url:
+        raise ValueError("DATABASE_URL contiene una plantilla de Railway (${{...}}); copie el valor real.")
+    from urllib.parse import unquote, urlparse
+
+    partes = urlparse(url)
+    if partes.scheme not in ("mysql", "mysql+mysqlconnector") or not partes.hostname:
+        raise ValueError("DATABASE_URL debe tener la forma mysql://usuario:clave@host:puerto/base")
+    os.environ["MYSQL_HOST"] = partes.hostname
+    os.environ["MYSQL_PORT"] = str(partes.port or 3306)
+    os.environ["MYSQL_USER"] = unquote(partes.username or "root")
+    os.environ["MYSQL_PASSWORD"] = unquote(partes.password or "")
+    if partes.path.strip("/"):
+        os.environ["MYSQL_DATABASE"] = partes.path.strip("/")
+
+
+_usar_url_de_conexion()
+
 MYSQL_HOST = os.environ.get("MYSQL_HOST", "127.0.0.1")
 MYSQL_PORT = int(os.environ.get("MYSQL_PORT", "3306"))
 MYSQL_USER = os.environ.get("MYSQL_USER", "root")

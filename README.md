@@ -153,7 +153,7 @@ Vercel no puede conectarse a un MySQL instalado en tu computador, así que la ba
    ```
 
 3. Sube el proyecto a GitHub, entra a [vercel.com](https://vercel.com) → **Add New → Project** → importa el repositorio (Framework preset: *Other*).
-4. En **Environment Variables** agrega `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` y `FLASK_SECRET_KEY`, y luego haz clic en **Deploy**.
+4. En **Environment Variables** agrega `DATABASE_URL` (la URL pública `mysql://usuario:clave@host:puerto/base` de tu proveedor) y `FLASK_SECRET_KEY`, y luego haz clic en **Deploy**. También puedes usar las variables sueltas `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD` y `MYSQL_DATABASE`.
 
 Archivos usados por Vercel: `api/index.py` (expone la app Flask), `vercel.json` (envía todas las rutas a Flask) y `.vercelignore`. En Vercel cada archivo subido puede pesar como máximo 4.5 MB (límite de la plataforma).
 
