@@ -10,9 +10,14 @@
 </div>
 <section class="panel">
   {% if usuarios %}
+  <div class="table-tools">
+    <input type="search" placeholder="Filtrar por nombre, correo o rol…" aria-label="Filtrar tabla" data-filter-table="tabla-usuarios">
+    <span data-filter-count></span>
+    <span class="hint">Clic en un encabezado para ordenar</span>
+  </div>
   <div class="table-scroll">
-    <table>
-      <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <table id="tabla-usuarios" data-sortable>
+      <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th data-nosort>Acciones</th></tr></thead>
       <tbody>
         {% for usuario in usuarios %}
         <tr>
@@ -25,7 +30,7 @@
             <div class="table-actions">
               <a class="button button-secondary button-small" href="{{ url_for('editar_usuario', id_usuario=usuario['id_usuario']) }}">Editar</a>
               {% if usuario["id_usuario"] != session["usuario"]["id_usuario"] %}
-              <form action="{{ url_for('eliminar_usuario', id_usuario=usuario['id_usuario']) }}" method="post" onsubmit="return confirm('¿Eliminar el usuario?')">
+              <form action="{{ url_for('eliminar_usuario', id_usuario=usuario['id_usuario']) }}" method="post" data-confirm="Se eliminará la cuenta de {{ usuario['nombre'] }}. Si tiene registros asociados, solo se desactivará.">
                 <button class="button button-danger button-small" type="submit">Eliminar</button>
               </form>
               {% endif %}

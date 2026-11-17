@@ -19,8 +19,13 @@
 </form>
 <section class="panel">
   {% if decisiones %}
+  <div class="table-tools">
+    <input type="search" placeholder="Filtrar por código, investigador o decisión…" aria-label="Filtrar tabla" data-filter-table="tabla-decisiones">
+    <span data-filter-count></span>
+    <span class="hint">Clic en un encabezado para ordenar</span>
+  </div>
   <div class="table-scroll">
-    <table>
+    <table id="tabla-decisiones" data-sortable>
       <thead><tr><th>Fecha</th><th>Sesión</th><th>Solicitud</th><th>Tipo</th><th>Investigador</th><th>Decisión</th><th>Observación</th></tr></thead>
       <tbody>
         {% for d in decisiones %}

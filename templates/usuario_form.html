@@ -10,13 +10,13 @@
   </div>
   <form method="post" class="form-stack">
     <label for="nombre">Nombre *</label>
-    <input id="nombre" name="nombre" value="{{ request.form.get('nombre', usuario['nombre'] if usuario else '') }}" required>
+    <input id="nombre" name="nombre" minlength="3" value="{{ request.form.get('nombre', usuario['nombre'] if usuario else '') }}" required>
 
     <label for="correo">Correo *</label>
     <input id="correo" name="correo" type="email" value="{{ request.form.get('correo', usuario['correo'] if usuario else '') }}" required>
 
     <label for="password">Contraseña {{ "*" if not usuario else "(dejar vacía para conservarla)" }}</label>
-    <input id="password" name="password" type="password" autocomplete="new-password" {% if not usuario %}required{% endif %}>
+    <input id="password" name="password" type="password" minlength="6" autocomplete="new-password" {% if not usuario %}required{% endif %}>
 
     <label for="id_rol">Rol *</label>
     <select id="id_rol" name="id_rol" required>

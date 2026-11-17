@@ -8,16 +8,42 @@ import uuid
 
 import mysql.connector
 import mysql.connector.pooling
+from werkzeug.security import check_password_hash, generate_password_hash
 
+
+def _cargar_env(ruta=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")):
+    """Lee el archivo .env (CLAVE=valor por línea) sin dependencias externas.
+
+    Las variables ya definidas en el sistema tienen prioridad sobre el archivo.
+    """
+    if not os.path.exists(ruta):
+        return
+    with open(ruta, encoding="utf-8") as archivo:
+        for linea in archivo:
+            linea = linea.strip()
+            if not linea or linea.startswith("#") or "=" not in linea:
+                continue
+            clave, valor = linea.split("=", 1)
+            os.environ.setdefault(clave.strip(), valor.strip().strip('"').strip("'"))
+
+
+_cargar_env()
 
 MYSQL_HOST = os.environ.get("MYSQL_HOST", "127.0.0.1")
 MYSQL_PORT = int(os.environ.get("MYSQL_PORT", "3306"))
 MYSQL_USER = os.environ.get("MYSQL_USER", "root")
 MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "")
 MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "comite_db")
+# Certificado CA opcional para bases en la nube que exigen SSL verificado (Aiven, TiDB, etc.).
+MYSQL_SSL_CA = os.environ.get("MYSQL_SSL_CA", "")
+
+# En Vercel (serverless) cada instancia abre pocas conexiones y solo /tmp es escribible.
+EN_VERCEL = bool(os.environ.get("VERCEL"))
+POOL_SIZE = int(os.environ.get("MYSQL_POOL_SIZE", "2" if EN_VERCEL else "10"))
 
 UPLOAD_DIR = os.environ.get(
-    "COMITE_UPLOAD_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+    "COMITE_UPLOAD_DIR",
+    "/tmp/uploads" if EN_VERCEL else os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"),
 )
 EXTENSIONES_PERMITIDAS = {"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "png", "jpg", "jpeg", "zip", "txt"}
 
@@ -93,7 +119,7 @@ SCHEMA = (
         id_usuario INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(255) NOT NULL,
         correo VARCHAR(255) NOT NULL UNIQUE,
-        password_hash CHAR(64) NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
         id_rol INT NOT NULL,
         activo TINYINT NOT NULL DEFAULT 1,
         fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -284,6 +310,8 @@ MIGRACIONES = (
     ("documento", "nombre_original", "VARCHAR(255) NULL"),
     ("acta", "asistentes", "LONGTEXT NULL"),
     ("acta", "id_usuario", "INT NULL"),
+    # El contenido del archivo se guarda en la base para que no se pierda en servidores sin disco persistente.
+    ("documento", "contenido", "LONGBLOB NULL"),
 )
 
 
@@ -291,7 +319,18 @@ MIGRACIONES = (
 # Utilidades de conexión
 # ---------------------------------------------------------------------------
 def hp(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash seguro con sal (Werkzeug/scrypt) para guardar contraseñas."""
+    return generate_password_hash(password)
+
+
+def verificar_password(password, password_hash):
+    """Acepta el formato nuevo (Werkzeug) y el antiguo (SHA-256 sin sal) de cuentas previas."""
+    if re.fullmatch(r"[0-9a-f]{64}", password_hash or ""):
+        return hashlib.sha256(password.encode()).hexdigest() == password_hash
+    try:
+        return check_password_hash(password_hash, password)
+    except ValueError:
+        return False
 
 
 def hoy():
@@ -306,6 +345,9 @@ def _connection_options(include_database=True):
         "password": MYSQL_PASSWORD,
         "charset": "utf8mb4",
     }
+    if MYSQL_SSL_CA:
+        options["ssl_ca"] = MYSQL_SSL_CA
+        options["ssl_verify_cert"] = True
     if include_database:
         options["database"] = MYSQL_DATABASE
     return options
@@ -319,7 +361,7 @@ def get_conn():
     global _pool
     if _pool is None:
         _pool = mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="comite", pool_size=10, pool_reset_session=True, **_connection_options()
+            pool_name="comite", pool_size=POOL_SIZE, pool_reset_session=True, **_connection_options()
         )
     try:
         return _pool.get_connection()
@@ -380,6 +422,15 @@ def _migrar(conn):
         )["total"]
         if not existe:
             _execute(conn, f"ALTER TABLE `{tabla}` ADD COLUMN `{columna}` {definicion}")
+    # El hash de Werkzeug es más largo que el SHA-256 de la versión anterior (CHAR(64)).
+    largo = _one(
+        conn,
+        """SELECT CHARACTER_MAXIMUM_LENGTH AS largo FROM information_schema.COLUMNS
+           WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'usuario' AND COLUMN_NAME = 'password_hash'""",
+        (MYSQL_DATABASE,),
+    )
+    if largo and largo["largo"] < 255:
+        _execute(conn, "ALTER TABLE usuario MODIFY password_hash VARCHAR(255) NOT NULL")
 
 
 def init_db():
@@ -516,13 +567,30 @@ def _cambiar_estado(conn, id_solicitud, nuevo, id_usuario, comentario=None, noti
 # ---------------------------------------------------------------------------
 def login(correo, password):
     with db() as conn:
-        return _one(
+        usuario = _one(
             conn,
-            """SELECT u.id_usuario, u.nombre, u.correo, u.id_rol, r.nombre AS rol
+            """SELECT u.id_usuario, u.nombre, u.correo, u.id_rol, u.password_hash, r.nombre AS rol
                FROM usuario u JOIN rol r ON u.id_rol = r.id_rol
-               WHERE u.correo = ? AND u.password_hash = ? AND u.activo = 1""",
-            (correo, hp(password)),
+               WHERE u.correo = ? AND u.activo = 1""",
+            (correo,),
         )
+        if usuario is None or not verificar_password(password, usuario["password_hash"]):
+            return None
+        if re.fullmatch(r"[0-9a-f]{64}", usuario["password_hash"]):
+            # Cuenta antigua con SHA-256: se actualiza al hash seguro en el primer ingreso.
+            _execute(conn, "UPDATE usuario SET password_hash = ? WHERE id_usuario = ?",
+                     (hp(password), usuario["id_usuario"]))
+        del usuario["password_hash"]
+        return usuario
+
+
+def buscar_rapido(texto, id_usuario=None, limite=8):
+    """Búsqueda para el buscador global (Fetch API): código, título o investigador."""
+    return [
+        {"id": s["id_solicitud"], "codigo": s["codigo"], "titulo": s["titulo"],
+         "estado": s["estado"], "investigador": s["investigador"]}
+        for s in listar_solicitudes(id_usuario=id_usuario, q=texto)[:limite]
+    ]
 
 
 def listar_usuarios():
@@ -955,10 +1023,15 @@ def guardar_documento(id_solicitud, id_requisito, archivo, nombre_seguro, id_usu
     """Guarda el archivo en disco y registra una nueva versión del documento."""
     if not nombre_seguro or not extension_permitida(nombre_seguro):
         return False, "Tipo de archivo no permitido. Use: " + ", ".join(sorted(EXTENSIONES_PERMITIDAS)) + "."
-    carpeta = os.path.join(UPLOAD_DIR, str(id_solicitud))
-    os.makedirs(carpeta, exist_ok=True)
+    contenido = archivo.read()
     nombre_disco = f"{uuid.uuid4().hex[:10]}_{nombre_seguro}"
-    archivo.save(os.path.join(carpeta, nombre_disco))
+    try:  # copia en disco (opcional); la fuente principal es la base de datos
+        carpeta = os.path.join(UPLOAD_DIR, str(id_solicitud))
+        os.makedirs(carpeta, exist_ok=True)
+        with open(os.path.join(carpeta, nombre_disco), "wb") as destino:
+            destino.write(contenido)
+    except OSError:
+        pass
     with db() as conn:
         requisito = None
         if id_requisito:
@@ -973,10 +1046,10 @@ def guardar_documento(id_solicitud, id_requisito, archivo, nombre_seguro, id_usu
         _execute(
             conn,
             """INSERT INTO documento
-               (id_solicitud, nombre, ruta, tipo, version, id_requisito, id_usuario, nombre_original)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+               (id_solicitud, nombre, ruta, tipo, version, id_requisito, id_usuario, nombre_original, contenido)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (id_solicitud, nombre_seguro, f"{id_solicitud}/{nombre_disco}", tipo_doc, version,
-             id_requisito or None, id_usuario, nombre_seguro),
+             id_requisito or None, id_usuario, nombre_seguro, contenido),
         )
         registrar_actuacion(
             conn, id_solicitud, id_usuario, "Carga de documento", f"{tipo_doc}: {nombre_seguro} (versión {version})"
@@ -995,7 +1068,9 @@ def listar_documentos(id_solicitud):
     with db() as conn:
         return _all(
             conn,
-            """SELECT d.*, u.nombre AS usuario FROM documento d
+            """SELECT d.id_documento, d.id_solicitud, d.nombre, d.ruta, d.tipo, d.version, d.fecha_carga,
+                      d.id_requisito, d.id_usuario, d.nombre_original, u.nombre AS usuario
+               FROM documento d
                LEFT JOIN usuario u ON u.id_usuario = d.id_usuario
                WHERE d.id_solicitud = ? ORDER BY d.tipo, d.version DESC""",
             (id_solicitud,),

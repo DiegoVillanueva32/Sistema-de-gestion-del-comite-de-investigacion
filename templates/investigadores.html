@@ -13,8 +13,13 @@
 </form>
 <section class="panel">
   {% if investigadores %}
+  <div class="table-tools">
+    <input type="search" placeholder="Filtrar por nombre, programa o facultad…" aria-label="Filtrar tabla" data-filter-table="tabla-investigadores">
+    <span data-filter-count></span>
+    <span class="hint">Clic en un encabezado para ordenar</span>
+  </div>
   <div class="table-scroll">
-    <table>
+    <table id="tabla-investigadores" data-sortable>
       <thead><tr><th>Nombre</th><th>Correo</th><th>Documento</th><th>Programa</th><th>Facultad</th><th>Teléfono</th><th>Solicitudes</th><th>Aprobadas</th></tr></thead>
       <tbody>
         {% for i in investigadores %}

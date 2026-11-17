@@ -1,42 +1,139 @@
-# Sistema de Gestión del Comité de Investigación
+# Comité I+D — Sistema de Gestión del Comité de Investigación
 
-Aplicación web con Flask, Jinja2 y MySQL (MySQL Server + MySQL Workbench) que centraliza las solicitudes de los investigadores ante el Comité de Investigación: radicación, verificación de documentos, revisión, ajustes, sesiones, decisiones, actas, notificaciones y reportes, con trazabilidad completa de cada trámite.
+Aplicación web full stack (Python + Flask, HTML5/CSS3/JavaScript y MySQL) que centraliza las solicitudes que los investigadores presentan ante el Comité de Investigación: radicación, carga y validación de documentos, revisión por el comité, solicitudes de ajuste, sesiones, decisiones, actas, notificaciones y reportes, con trazabilidad completa de cada trámite.
 
 **Usuarios:** investigadores, integrantes del comité, secretario(a) del comité y administrador.
 
-## Iniciar con MySQL Server y Workbench
+> Proyecto final — Herramientas Computacionales, Ingeniería de Sistemas, Universidad Cooperativa de Colombia (Momento evaluativo 3).
 
-1. Verifica que el servicio **MySQL Server** esté corriendo (en Windows: `services.msc` → servicio `MySQL80`, o desde Workbench en *Server → Startup/Shutdown*). Workbench sirve para ver las tablas y los datos de `comite_db`.
-2. Instala las dependencias desde la carpeta del proyecto:
+## El problema
+
+El trámite ante el comité se hacía por correo y carpetas compartidas: los documentos se perdían entre versiones, el investigador no sabía en qué estado estaba su solicitud, nadie veía quién la revisaba ni si el plazo se había vencido, y cada acta de sesión se transcribía a mano.
+
+## Objetivos
+
+**General:** desarrollar una aplicación web que gestione de principio a fin las solicitudes ante el Comité de Investigación, con trazabilidad de cada paso.
+
+**Específicos:**
+
+1. Permitir que los investigadores se registren, radiquen solicitudes y carguen documentos con versiones.
+2. Validar los requisitos de cada tipo de solicitud y bloquear el avance de solicitudes incompletas.
+3. Asignar revisores con fechas límite y registrar sus conceptos y solicitudes de ajuste.
+4. Programar sesiones, consolidar la agenda, registrar decisiones y generar el acta automáticamente.
+5. Dar visibilidad con notificaciones, búsquedas, filtros, reportes e indicadores exportables.
+6. Ofrecer una interfaz clara, adaptable al celular y con validaciones inmediatas en el cliente.
+
+## Tecnologías usadas
+
+| Capa | Tecnología | Uso en el proyecto |
+| --- | --- | --- |
+| Backend | Python 3.11+ y **Flask 3** | Rutas, controladores, sesiones, permisos por rol, API JSON |
+| Plantillas | Jinja2 | Renderizado dinámico en el servidor con herencia (`base.html`) |
+| Frontend | HTML5 semántico, **CSS3** propio (variables, grid, flexbox, animaciones) | Interfaz con identidad visual oscura, responsive |
+| Interactividad | **JavaScript** puro (ES2020, sin librerías) | Eventos, validación en el cliente, Fetch API, filtros y orden de tablas |
+| Base de datos | **MySQL 8** (MySQL Server + Workbench) | Modelo relacional de 18 tablas con llaves primarias y foráneas |
+| Conector | mysql-connector-python | Pool de conexiones y consultas parametrizadas |
+| Seguridad | Werkzeug | Hash de contraseñas con sal (scrypt), nombres de archivo seguros |
+
+## Arquitectura (MVC)
+
+```
+ Navegador (HTML5 + CSS3 + JavaScript)
+     │  formularios (POST)        ▲ HTML renderizado
+     │  Fetch API (JSON)          │ JSON
+     ▼                            │
+ main.py ── Controlador ──────────┘   43 rutas, decoradores de permisos, manejo de errores, API
+     │ llama funciones
+     ▼
+ models.py ── Modelo                  lógica del trámite, transacciones, consultas SQL
+     │ SQL parametrizado
+     ▼
+ MySQL (comite_db)                    18 tablas relacionadas (PK, FK, UNIQUE)
+
+ templates/ ── Vista                  19 plantillas Jinja2 que heredan de base.html
+ static/    ── style.css + app.js     estilos e interactividad del cliente
+```
+
+- **Modelo (`models.py`):** esquema, migraciones, reglas del flujo (estados, validación de requisitos, decisiones, actas) y acceso a datos dentro de transacciones (`with db()` hace *commit* o *rollback*).
+- **Vista (`templates/`):** cada pantalla es una plantilla que extiende `base.html`, donde viven el menú, los mensajes y los estilos.
+- **Controlador (`main.py`):** recibe la petición, verifica sesión y rol con decoradores (`@login_required`, `@comite_required`…), valida el formulario, llama al modelo y elige la vista o responde JSON.
+
+### ¿Por qué varias plantillas y no una sola página con `div` ocultos?
+
+- **Seguridad:** el servidor solo envía la vista que el rol puede ver; un `div` oculto con CSS igual llega al navegador.
+- **Una URL por pantalla:** `/solicitudes/13` se puede guardar o compartir y el botón Atrás funciona.
+- **Sin duplicar código:** la herencia de Jinja2 deja el menú y los estilos en un solo archivo.
+- **Trabajo en equipo:** cada integrante edita sus vistas con menos conflictos en git.
+
+El JavaScript se usa donde aporta (validaciones, búsqueda dinámica, notificaciones en vivo), no para simular la navegación.
+
+## Instalación
+
+Requisitos: Python 3.11 o superior y MySQL Server 8 en ejecución (en Windows: `services.msc` → servicio `MySQL80`, o desde Workbench en *Server → Startup/Shutdown*).
+
+1. Clona el repositorio y entra a la carpeta del proyecto.
+2. (Recomendado) Crea un entorno virtual:
+
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
+
+3. Instala las dependencias:
 
    ```powershell
    python -m pip install -r requirements.txt
    ```
 
-3. (Opcional) Carga los datos de demostración:
+4. Configura la conexión: copia `.env.example` como `.env` y escribe la contraseña de tu MySQL (los mismos datos que usas en Workbench):
+
+   ```powershell
+   copy .env.example .env
+   ```
+
+   | Variable | Valor por defecto | Descripción |
+   | --- | --- | --- |
+   | `MYSQL_HOST` | `127.0.0.1` | Servidor de MySQL |
+   | `MYSQL_PORT` | `3306` | Puerto |
+   | `MYSQL_USER` | `root` | Usuario |
+   | `MYSQL_PASSWORD` | *(vacía)* | Contraseña del usuario |
+   | `MYSQL_DATABASE` | `comite_db` | Base de datos (se crea sola) |
+   | `FLASK_SECRET_KEY` | clave de desarrollo | Clave para firmar la sesión |
+
+   El archivo `.env` no se sube a GitHub. También puedes definir las variables en la terminal (`$env:MYSQL_PASSWORD = "..."`); estas tienen prioridad sobre el archivo.
+
+5. (Opcional) Carga los datos de demostración:
 
    ```powershell
    python datos_demo.py
    ```
 
-4. Inicia la aplicación y abre `http://127.0.0.1:5000`:
+6. Inicia la aplicación y abre `http://127.0.0.1:5000`:
 
    ```powershell
    python main.py
    ```
 
-La aplicación crea automáticamente la base `comite_db`, sus tablas y los tipos de solicitud con sus requisitos. Si ya tenías la base de la versión anterior, agrega las tablas y columnas nuevas sin borrar datos. No hace falta importar ningún archivo SQL. Los documentos cargados se guardan en la carpeta `uploads/`.
+La aplicación crea automáticamente la base `comite_db`, sus tablas y los tipos de solicitud con sus requisitos. Si ya tenías la base de una versión anterior, agrega las tablas y columnas nuevas sin borrar datos. No hace falta importar ningún archivo SQL. Los documentos cargados se guardan en la base de datos (columna `documento.contenido`) y además se copian a la carpeta `uploads/`.
 
-La aplicación se conecta por defecto a `127.0.0.1:3306` con el usuario `root` y la contraseña vacía. Si al instalar MySQL Server le pusiste una contraseña a `root` (lo normal), o usas otros valores, configúralos antes de iniciar (son los mismos datos de la conexión que usas en Workbench):
+## Despliegue en Vercel
 
-```powershell
-$env:MYSQL_HOST = "127.0.0.1"
-$env:MYSQL_PORT = "3306"
-$env:MYSQL_USER = "root"
-$env:MYSQL_PASSWORD = "tu contraseña"
-$env:MYSQL_DATABASE = "comite_db"
-python main.py
-```
+Vercel no puede conectarse a un MySQL instalado en tu computador, así que la base debe estar en la nube (por ejemplo **Aiven for MySQL**, plan gratuito).
+
+1. Crea un servicio MySQL en la nube y copia sus datos de conexión (host, puerto, usuario, contraseña, base; en Aiven la base es `defaultdb`).
+2. Crea las tablas y los usuarios demo **desde tu computador**, apuntando a la base en la nube (en PowerShell):
+
+   ```powershell
+   $env:MYSQL_HOST="<host>"; $env:MYSQL_PORT="<puerto>"; $env:MYSQL_USER="<usuario>"
+   $env:MYSQL_PASSWORD="<contraseña>"; $env:MYSQL_DATABASE="defaultdb"
+   flask --app main init-db
+   python datos_demo.py      # opcional: carga el escenario de demostración
+   ```
+
+3. Sube el proyecto a GitHub, entra a [vercel.com](https://vercel.com) → **Add New → Project** → importa el repositorio (Framework preset: *Other*).
+4. En **Environment Variables** agrega `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` y `FLASK_SECRET_KEY`, y luego haz clic en **Deploy**.
+
+Archivos usados por Vercel: `api/index.py` (expone la app Flask), `vercel.json` (envía todas las rutas a Flask) y `.vercelignore`. En Vercel cada archivo subido puede pesar como máximo 4.5 MB (límite de la plataforma).
 
 ## Usuarios demo
 
@@ -104,13 +201,87 @@ Cada paso queda en el **historial de actuaciones** de la solicitud y genera **no
 | Reportes | | ✔ | ✔ | ✔ |
 | Administrar usuarios | | | | ✔ |
 
+## Interactividad en el cliente (JavaScript)
+
+Todo está en `static/app.js`, en JavaScript puro y organizado por módulos que se activan solo si la página tiene los elementos que usan.
+
+| Funcionalidad | Eventos / API | Dónde verla |
+| --- | --- | --- |
+| Validación en el cliente con mensajes en español (obligatorios, correo, longitud mínima, formato, contraseñas que coinciden, fecha no anterior a hoy, tamaño y extensión del archivo) | `submit`, `blur`, `input`, `change` | Registro, login, radicar solicitud, usuarios, sesiones, carga de documentos |
+| Búsqueda dinámica de solicitudes mientras se escribe, con navegación por teclado y atajo `/` o `Ctrl+K` | `input`, `keydown`, **Fetch API** + `AbortController` | Buscador del menú lateral |
+| Notificaciones en vivo: el contador se actualiza cada 30 s y el panel permite marcar como leídas sin recargar | `click`, **Fetch API** (GET y POST) | Campana del menú |
+| Filtro instantáneo de tablas con contador de resultados | `input`, `keydown` | Solicitudes, usuarios, investigadores, decisiones, sesiones |
+| Orden de columnas al hacer clic en el encabezado (también con teclado) | `click`, `keydown` | Las mismas tablas |
+| Modal propio de confirmación para eliminar | `submit`, `click`, `<dialog>` | Eliminar solicitud, sesión o usuario |
+| Mostrar u ocultar contraseña, contador de caracteres, requisitos según el tipo de solicitud | `click`, `input`, `change` | Formularios |
+| Aviso de cambios sin guardar, botón con indicador de carga para evitar envíos dobles | `beforeunload`, `submit` | Radicar / editar solicitud |
+| Animaciones de KPIs y barras de reportes (respetan *reducir movimiento*) | `requestAnimationFrame` | Inicio y Reportes |
+| Menú desplegable en celular | `click` | Pantallas de menos de 900 px |
+
+La validación en el cliente mejora la experiencia, pero el servidor vuelve a validar todo: nunca se confía solo en el navegador.
+
+## API JSON
+
+| Método | Ruta | Respuesta |
+| --- | --- | --- |
+| GET | `/api/buscar?q=texto` | Solicitudes que coinciden (el investigador solo ve las suyas) |
+| GET | `/api/notificaciones` | Número de pendientes y últimas 5 notificaciones |
+| POST | `/api/notificaciones/leer` | Marca todas como leídas |
+
+Todas exigen sesión iniciada.
+
+## Base de datos
+
+MySQL con 18 tablas InnoDB, llaves primarias autoincrementales, 23 llaves foráneas y restricciones `UNIQUE` (correo, documento, código de solicitud, número de sesión). Tablas principales:
+
+```
+rol ─< usuario ─── investigador
+          │
+tipo_solicitud ─< requisito          sesion_comite ─< agenda_sesion >─ solicitud
+          │                                │
+          └──< solicitud >── investigador  └── acta
+                  │
+     documento, validacion_requisito, asignacion_revision, revision,
+     observacion, decision, historial_estado, actuacion
+                                                      notificacion >── usuario
+```
+
+- **Integridad:** las llaves foráneas impiden registros huérfanos; un usuario con historial no se borra, se desactiva.
+- **Transacciones:** cada operación se confirma completa o se revierte (`models.db()`).
+- **Seguridad:** todas las consultas usan parámetros (sin concatenar texto), lo que evita la inyección SQL; las contraseñas se guardan con hash y sal. Las cuentas creadas con la versión anterior (SHA-256) se actualizan solas al iniciar sesión.
+
+## Manejo de errores
+
+- Páginas propias para 403 (sin permiso), 404 (no existe), 413 (archivo de más de 16 MB) y 500 (error inesperado, que queda registrado en el log).
+- Validaciones en el servidor con mensajes claros (correo duplicado, requisitos faltantes, formato de archivo, fechas inválidas).
+
+## Cumplimiento de los lineamientos del proyecto
+
+| Lineamiento | Cómo se cumple |
+| --- | --- |
+| Python 3.x + Flask | `main.py` (Flask 3) |
+| Arquitectura MVC | Modelo `models.py`, Vista `templates/`, Controlador `main.py` |
+| Rutas, controladores, formularios, validaciones | 43 rutas + 3 de API; validación en servidor y cliente |
+| CRUD completo | Usuarios (crear, ver, editar, eliminar), solicitudes, sesiones, documentos |
+| Conexión a base de datos y manejo de errores | MySQL con pool de conexiones; manejadores 403, 404, 413 y 500 |
+| HTML5 semántico, CSS3 propio, JavaScript | `header`, `nav`, `main`, `section`, `aside`, `dialog`; `style.css`; `app.js` |
+| Eventos JS, validación en cliente, renderizado dinámico | Ver *Interactividad en el cliente* |
+| Valor agregado: animaciones, Fetch API, responsive | Animaciones CSS/JS, buscador y notificaciones con Fetch, diseño adaptable |
+| Gestión (CRUD) + Consulta (reportes, filtros, búsquedas) | Módulos de solicitudes, usuarios y sesiones; Reportes con CSV, filtros y buscador |
+| Modelo relacional con PK, FK e integridad | 18 tablas, 23 llaves foráneas |
+| README, requirements.txt, `.env` | Este archivo, `requirements.txt`, `.env.example` |
+
 ## Estructura
 
 ```
-main.py            Rutas Flask y control de permisos
-models.py          Esquema MySQL, migraciones y lógica de negocio
+main.py            Controlador: rutas Flask, permisos, API JSON y manejo de errores
+models.py          Modelo: esquema MySQL, migraciones y lógica del trámite
 datos_demo.py      Escenario de demostración completo
-templates/         Vistas Jinja2
-static/style.css   Estilos
-uploads/           Documentos cargados (se crea automáticamente; no se sube a git)
+templates/         Vistas Jinja2 (base.html + 18 vistas)
+static/style.css   Estilos: tema oscuro, componentes y diseño responsive
+static/app.js      Interactividad del cliente: validaciones, Fetch API, filtros, animaciones
+.env.example       Plantilla de configuración de la conexión
+uploads/           Copia local de documentos cargados (no se sube a git)
+api/index.py       Punto de entrada para Vercel
+vercel.json        Configuración de Vercel (todas las rutas van a Flask)
 ```

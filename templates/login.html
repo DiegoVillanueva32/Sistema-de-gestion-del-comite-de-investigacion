@@ -2,8 +2,12 @@
 {% block title %}Iniciar sesión | Comité de Investigación{% endblock %}
 {% block content %}
 <section class="login-card">
-  <h1>Comité de Investigación</h1>
-  <p class="muted">Sistema de gestión de solicitudes, sesiones y actas del comité.</p>
+  <div class="login-logo" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5.5 9.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3"/><path d="M7 15h10"/></svg>
+  </div>
+  <p class="eyebrow">Comité I+D</p>
+  <h1>Bienvenido al <span>Comité de Investigación</span></h1>
+  <p class="muted">Radique, siga y decida solicitudes de investigación en un solo lugar.</p>
   <form method="post" class="form-stack">
     <label for="correo">Correo</label>
     <input id="correo" name="correo" type="email" autocomplete="username" required>
@@ -15,10 +19,10 @@
   <details class="demo-accounts">
     <summary>Usuarios demo</summary>
     <ul>
-      <li>admin@comite.edu.co / admin123 (Administrador)</li>
-      <li>secretaria@comite.edu.co / secre123 (Secretario)</li>
-      <li>comite@comite.edu.co / comite123 (Comité)</li>
-      <li>investigador@comite.edu.co / invest123 (Investigador)</li>
+      <li><code>admin@comite.edu.co</code> / admin123 (Administrador)</li>
+      <li><code>secretaria@comite.edu.co</code> / secre123 (Secretario)</li>
+      <li><code>comite@comite.edu.co</code> / comite123 (Comité)</li>
+      <li><code>investigador@comite.edu.co</code> / invest123 (Investigador)</li>
     </ul>
   </details>
 </section>

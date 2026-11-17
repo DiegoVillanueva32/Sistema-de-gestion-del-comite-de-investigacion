@@ -12,8 +12,13 @@
 </div>
 <section class="panel">
   {% if sesiones %}
+  <div class="table-tools">
+    <input type="search" placeholder="Filtrar por número, lugar o estado…" aria-label="Filtrar tabla" data-filter-table="tabla-sesiones">
+    <span data-filter-count></span>
+    <span class="hint">Clic en un encabezado para ordenar</span>
+  </div>
   <div class="table-scroll">
-    <table>
+    <table id="tabla-sesiones" data-sortable>
       <thead><tr><th>Sesión</th><th>Fecha</th><th>Hora</th><th>Lugar</th><th>Estado</th><th>En agenda</th><th>Decisiones</th><th>Acta</th></tr></thead>
       <tbody>
         {% for se in sesiones %}

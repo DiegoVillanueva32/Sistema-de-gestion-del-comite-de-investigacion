@@ -9,10 +9,10 @@
       <p class="muted">Los campos marcados con * son obligatorios.{% if not solicitud %} Después de radicar podrá cargar los documentos requeridos.{% endif %}</p>
     </div>
   </div>
-  <form method="post" class="form-stack">
+  <form method="post" class="form-stack" data-warn-unsaved>
     <label for="id_tipo">Tipo de solicitud *</label>
     {% set tipo_sel = request.form.get('id_tipo', solicitud['id_tipo'] if solicitud else '')|string %}
-    <select id="id_tipo" name="id_tipo" required>
+    <select id="id_tipo" name="id_tipo" required data-req-select>
       <option value="">Seleccione un tipo</option>
       {% for tipo in tipos %}
       <option value="{{ tipo['id_tipo'] }}" {% if tipo_sel == tipo['id_tipo']|string %}selected{% endif %}>{{ tipo["nombre"] }}</option>
@@ -32,10 +32,10 @@
     </div>
 
     <label for="titulo">Título *</label>
-    <input id="titulo" name="titulo" maxlength="250" value="{{ request.form.get('titulo', solicitud['titulo'] if solicitud else '') }}" required>
+    <input id="titulo" name="titulo" minlength="8" maxlength="250" data-counter value="{{ request.form.get('titulo', solicitud['titulo'] if solicitud else '') }}" required>
 
     <label for="descripcion">Resumen / descripción</label>
-    <textarea id="descripcion" name="descripcion" rows="6">{{ request.form.get('descripcion', solicitud['descripcion'] if solicitud else '') or '' }}</textarea>
+    <textarea id="descripcion" name="descripcion" rows="6" maxlength="3000" data-counter>{{ request.form.get('descripcion', solicitud['descripcion'] if solicitud else '') or '' }}</textarea>
 
     {% if rol in ROLES_GESTION or not solicitud %}
     <div class="form-row">
@@ -48,7 +48,7 @@
       </div>
       <div>
         <label for="fecha_limite">{{ "Fecha límite de respuesta" if rol in ROLES_GESTION else "Fecha en que necesita respuesta" }}</label>
-        <input id="fecha_limite" name="fecha_limite" type="date" value="{{ request.form.get('fecha_limite', solicitud['fecha_limite'] if solicitud else '') or '' }}">
+        <input id="fecha_limite" name="fecha_limite" type="date" {% if not solicitud %}data-min-date="today"{% endif %} value="{{ request.form.get('fecha_limite', solicitud['fecha_limite'] if solicitud else '') or '' }}">
       </div>
     </div>
     {% endif %}
@@ -58,11 +58,4 @@
     </div>
   </form>
 </section>
-<script>
-  document.getElementById("id_tipo").addEventListener("change", function () {
-    document.querySelectorAll(".req-box").forEach(function (box) {
-      box.hidden = box.dataset.tipo !== this.value;
-    }, this);
-  });
-</script>
 {% endblock %}

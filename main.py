@@ -6,8 +6,8 @@ import io
 import os
 
 from flask import (
-    Flask, Response, abort, flash, redirect, render_template, request,
-    send_from_directory, session, url_for,
+    Flask, Response, abort, flash, jsonify, redirect, render_template, request,
+    send_file, send_from_directory, session, url_for,
 )
 from werkzeug.utils import secure_filename
 
@@ -370,10 +370,14 @@ def descargar_documento(id_documento):
     if documento is None:
         abort(404)
     _cargar_solicitud(documento["id_solicitud"])  # verifica permisos
+    descarga = documento["nombre_original"] or documento["nombre"]
+    if documento.get("contenido") is not None:
+        return send_file(io.BytesIO(documento["contenido"]), as_attachment=True, download_name=descarga)
+    # Documentos antiguos guardados solo en disco
     carpeta, nombre = os.path.split(documento["ruta"])
     return send_from_directory(
         os.path.join(models.UPLOAD_DIR, carpeta), nombre,
-        as_attachment=True, download_name=documento["nombre_original"] or documento["nombre"],
+        as_attachment=True, download_name=descarga,
     )
 
 
@@ -646,6 +650,47 @@ def leer_notificaciones():
     return redirect(url_for("notificaciones"))
 
 
+# ---------------------------------------------------------------------------
+# API JSON (consumida con Fetch desde static/app.js)
+# ---------------------------------------------------------------------------
+@app.get("/api/notificaciones")
+@login_required
+def api_notificaciones():
+    """Contador y últimas notificaciones: la campana se actualiza sin recargar la página."""
+    id_usuario = session["usuario"]["id_usuario"]
+    ultimas = models.listar_notificaciones(id_usuario, limite=5)
+    return jsonify(
+        pendientes=models.contar_no_leidas(id_usuario),
+        ultimas=[
+            {"id": n["id_notificacion"], "mensaje": n["mensaje"], "leida": bool(n["leida"]),
+             "fecha": formato_fecha(n["fecha"], True),
+             "url": url_for("abrir_notificacion", id_notificacion=n["id_notificacion"])}
+            for n in ultimas
+        ],
+    )
+
+
+@app.post("/api/notificaciones/leer")
+@login_required
+def api_leer_notificaciones():
+    models.marcar_leida(session["usuario"]["id_usuario"])
+    return jsonify(ok=True, pendientes=0)
+
+
+@app.get("/api/buscar")
+@login_required
+def api_buscar():
+    """Búsqueda dinámica de solicitudes; el investigador solo encuentra las suyas."""
+    texto = request.args.get("q", "").strip()
+    if len(texto) < 2:
+        return jsonify(resultados=[])
+    resultados = models.buscar_rapido(texto, _id_si_investigador())
+    for r in resultados:
+        r["url"] = url_for("detalle_solicitud", id_solicitud=r["id"])
+        r["clase"] = clase_estado(r["estado"])
+    return jsonify(resultados=resultados)
+
+
 @app.get("/notificaciones/<int:id_notificacion>")
 @login_required
 def abrir_notificacion(id_notificacion):
@@ -791,6 +836,19 @@ def not_found(_error):
 @app.errorhandler(413)
 def demasiado_grande(_error):
     return render_template("error.html", code=413, message="El archivo supera el tamaño máximo de 16 MB."), 413
+
+
+@app.errorhandler(500)
+def error_interno(_error):
+    app.logger.exception("Error interno")
+    return render_template("error.html", code=500, message="Ocurrió un error inesperado. Intente de nuevo."), 500
+
+
+@app.cli.command("init-db")
+def init_db_command():
+    """Crea tablas y datos base. Uso: flask --app main init-db (útil para la base en la nube)."""
+    models.init_db()
+    print("Base de datos lista.")
 
 
 if __name__ == "__main__":

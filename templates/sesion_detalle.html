@@ -12,7 +12,7 @@
     {% if acta %}<a class="button button-secondary" href="{{ url_for('ver_acta', id_sesion=sesion_c['id_sesion']) }}">Ver {{ acta["numero"] }}</a>{% endif %}
     {% if puede_gestionar %}
     <a class="button button-secondary" href="{{ url_for('editar_sesion', id_sesion=sesion_c['id_sesion']) }}">Editar</a>
-    <form method="post" action="{{ url_for('eliminar_sesion', id_sesion=sesion_c['id_sesion']) }}" onsubmit="return confirm('¿Eliminar la sesión?')">
+    <form method="post" action="{{ url_for('eliminar_sesion', id_sesion=sesion_c['id_sesion']) }}" data-confirm="Se eliminará la sesión y su agenda. Esta acción no se puede deshacer.">
       <button class="button button-danger" type="submit">Eliminar</button>
     </form>
     {% endif %}
