@@ -5,7 +5,7 @@
   <div class="page-heading">
     <div>
       <h1>{{ "Editar usuario" if usuario else "Nuevo usuario" }}</h1>
-      <p class="muted">Complete los datos de la cuenta.</p>
+      <p class="text-muted">Complete los datos de la cuenta.</p>
     </div>
   </div>
   <form method="post" class="form-stack">
@@ -28,7 +28,7 @@
     {% if usuario %}
     <label class="check"><input type="checkbox" name="activo" value="1" {% if usuario["activo"] %}checked{% endif %}> Cuenta activa</label>
     {% endif %}
-    <div class="form-actions">
+    <div class="flex justify-end gap-2.5 mt-5">
       <a class="button button-secondary" href="{{ url_for('usuarios') }}">Cancelar</a>
       <button class="button button-primary" type="submit">Guardar</button>
     </div>

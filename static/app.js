@@ -201,7 +201,7 @@
     const filas = $$("tbody tr", tabla);
     const salida = entrada.parentElement.querySelector("[data-filter-count]");
     const vacio = document.createElement("p");
-    vacio.className = "muted pad";
+    vacio.className = "text-muted m-0 px-4 py-3.5";
     vacio.textContent = "Ninguna fila coincide con el filtro.";
     vacio.hidden = true;
     tabla.insertAdjacentElement("afterend", vacio);

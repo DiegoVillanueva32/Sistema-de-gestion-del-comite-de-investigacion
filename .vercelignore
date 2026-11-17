@@ -5,3 +5,8 @@ __pycache__/
 uploads/
 .vscode/
 *.pdf
+node_modules/
+src/
+package.json
+package-lock.json
+tailwind.config.js

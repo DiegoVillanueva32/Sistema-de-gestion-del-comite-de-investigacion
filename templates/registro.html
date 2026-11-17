@@ -3,7 +3,7 @@
 {% block content %}
 <section class="login-card wide">
   <h1>Registro de investigador</h1>
-  <p class="muted">Cree su cuenta para radicar solicitudes ante el Comité de Investigación.</p>
+  <p class="text-muted mt-0 mb-6">Cree su cuenta para radicar solicitudes ante el Comité de Investigación.</p>
   <form method="post" class="form-grid">
     <div class="full">
       <label for="nombre">Nombre completo *</label>
@@ -30,14 +30,14 @@
       <input id="correo" name="correo" type="email" value="{{ request.form.get('correo', '') }}" autocomplete="username" required>
     </div>
     <div>
-      <label for="password">Contraseña * <small class="muted">(mín. 6 caracteres)</small></label>
+      <label for="password">Contraseña * <small class="text-muted">(mín. 6 caracteres)</small></label>
       <input id="password" name="password" type="password" minlength="6" autocomplete="new-password" required>
     </div>
     <div>
       <label for="password2">Confirmar contraseña *</label>
       <input id="password2" name="password2" type="password" minlength="6" data-match="password" autocomplete="new-password" required>
     </div>
-    <div class="full form-actions">
+    <div class="full flex justify-end gap-2.5 mt-5">
       <a class="button button-secondary" href="{{ url_for('login') }}">Volver</a>
       <button class="button button-primary" type="submit">Registrarme</button>
     </div>

@@ -4,7 +4,7 @@
 <div class="page-heading">
   <div>
     <h1>Solicitudes</h1>
-    <p class="muted">Radicación, seguimiento y consulta del historial de solicitudes.</p>
+    <p class="text-muted">Radicación, seguimiento y consulta del historial de solicitudes.</p>
   </div>
   {% if usuario["rol"] == "Investigador" %}
   <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
@@ -26,7 +26,7 @@
   <label class="check"><input type="checkbox" name="mias" value="1" {% if request.args.get('mias') == '1' %}checked{% endif %}> Asignadas a mí</label>
   {% endif %}
   <button class="button button-secondary" type="submit">Filtrar</button>
-  {% if request.args %}<a class="link small" href="{{ url_for('solicitudes') }}">Limpiar</a>{% endif %}
+  {% if request.args %}<a class="link text-[13px]" href="{{ url_for('solicitudes') }}">Limpiar</a>{% endif %}
 </form>
 
 <section class="panel">
@@ -52,9 +52,9 @@
           <td>{{ s["investigador"] }}</td>
           <td><span class="status {{ s['estado']|clase_estado }}">{{ s["estado"] }}</span></td>
           <td><span class="prio prio-{{ s['prioridad']|lower }}">{{ s["prioridad"] }}</span></td>
-          <td class="nowrap">{{ s["fecha"]|fecha }}</td>
-          <td class="nowrap {{ 'text-bad' if s['vencida'] }}">{{ s["fecha_limite"] or "—" }}{% if s["vencida"] %} ⚠{% endif %}</td>
-          <td class="small">{{ s["responsables"] or "—" }}</td>
+          <td class="whitespace-nowrap">{{ s["fecha"]|fecha }}</td>
+          <td class="whitespace-nowrap {{ '!text-rose-400' if s['vencida'] }}">{{ s["fecha_limite"] or "—" }}{% if s["vencida"] %} ⚠{% endif %}</td>
+          <td class="text-[13px]">{{ s["responsables"] or "—" }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -63,7 +63,7 @@
   {% else %}
   <div class="empty-state">
     <h2>No hay solicitudes</h2>
-    <p class="muted">Las solicitudes que coincidan con los filtros aparecerán aquí.</p>
+    <p class="text-muted">Las solicitudes que coincidan con los filtros aparecerán aquí.</p>
     {% if usuario["rol"] == "Investigador" %}
     <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
     {% endif %}

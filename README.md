@@ -30,6 +30,7 @@ El trámite ante el comité se hacía por correo y carpetas compartidas: los doc
 | Backend | Python 3.11+ y **Flask 3** | Rutas, controladores, sesiones, permisos por rol, API JSON |
 | Plantillas | Jinja2 | Renderizado dinámico en el servidor con herencia (`base.html`) |
 | Frontend | HTML5 semántico, **CSS3** propio (variables, grid, flexbox, animaciones) | Interfaz con identidad visual oscura, responsive |
+| Framework CSS | **Tailwind CSS 3** (CLI, `tailwind.config.js`) | Componentes con `@apply` (botones, alertas, estados, KPIs, tarjetas) y utilidades en las plantillas para layout y responsive |
 | Interactividad | **JavaScript** puro (ES2020, sin librerías) | Eventos, validación en el cliente, Fetch API, filtros y orden de tablas |
 | Base de datos | **MySQL 8** (MySQL Server + Workbench) | Modelo relacional de 18 tablas con llaves primarias y foráneas |
 | Conector | mysql-connector-python | Pool de conexiones y consultas parametrizadas |
@@ -115,6 +116,21 @@ Requisitos: Python 3.11 o superior y MySQL Server 8 en ejecución (en Windows: `
    ```
 
 La aplicación crea automáticamente la base `comite_db`, sus tablas y los tipos de solicitud con sus requisitos. Si ya tenías la base de una versión anterior, agrega las tablas y columnas nuevas sin borrar datos. No hace falta importar ningún archivo SQL. Los documentos cargados se guardan en la base de datos (columna `documento.contenido`) y además se copian a la carpeta `uploads/`.
+
+## Estilos con Tailwind CSS
+
+Los estilos combinan dos capas:
+
+- `src/tailwind.css` → fuente de Tailwind: los componentes del sistema escritos con `@apply` (`.button`, `.alert`, `.status`, `.kpi`, `.panel`…). Las plantillas también usan utilidades de Tailwind directamente (`grid grid-cols-2 gap-4 max-[1100px]:grid-cols-1`, `text-muted`, `flex justify-end`…).
+- `tailwind.config.js` → paleta del tema "Nocturno", tipografías y breakpoints. Escanea `templates/`, `static/app.js` y `main.py`.
+- `static/style.css` → reset, variables de color y piezas con efectos propios (barra lateral, buscador, línea de progreso, modal).
+
+El CSS compilado (`static/tailwind.css`) ya está incluido en el repositorio, así que **no hace falta Node.js para ejecutar la aplicación**. Solo si cambias clases en las plantillas, vuelve a compilarlo:
+
+```powershell
+npm install
+npm run build:css      # o: npm run watch:css mientras desarrollas
+```
 
 ## Despliegue en Vercel
 
@@ -278,7 +294,11 @@ main.py            Controlador: rutas Flask, permisos, API JSON y manejo de erro
 models.py          Modelo: esquema MySQL, migraciones y lógica del trámite
 datos_demo.py      Escenario de demostración completo
 templates/         Vistas Jinja2 (base.html + 18 vistas)
-static/style.css   Estilos: tema oscuro, componentes y diseño responsive
+static/style.css   Estilos propios: reset, variables del tema y efectos especiales
+static/tailwind.css  CSS de Tailwind compilado (generado desde src/tailwind.css)
+src/tailwind.css   Fuente de Tailwind: componentes con @apply
+tailwind.config.js Configuración de Tailwind (paleta, fuentes, archivos a escanear)
+package.json       Scripts para compilar Tailwind (npm run build:css)
 static/app.js      Interactividad del cliente: validaciones, Fetch API, filtros, animaciones
 .env.example       Plantilla de configuración de la conexión
 uploads/           Copia local de documentos cargados (no se sube a git)

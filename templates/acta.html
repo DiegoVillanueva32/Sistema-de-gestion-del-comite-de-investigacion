@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ acta["numero"] }} | Comité de Investigación{% endblock %}
 {% block content %}
-<p class="crumbs no-print"><a class="link" href="{{ url_for('sesiones') }}">Sesiones</a> / <a class="link" href="{{ url_for('detalle_sesion', id_sesion=sesion_c['id_sesion']) }}">{{ sesion_c["numero"] }}</a> / Acta</p>
+<p class="mt-0 mb-3 text-[13.5px] text-muted no-print"><a class="link" href="{{ url_for('sesiones') }}">Sesiones</a> / <a class="link" href="{{ url_for('detalle_sesion', id_sesion=sesion_c['id_sesion']) }}">{{ sesion_c["numero"] }}</a> / Acta</p>
 <div class="page-heading no-print">
   <div>
     <h1>{{ acta["numero"] }}</h1>
-    <p class="muted">Versión {{ acta["version"] }} · generada {{ acta["fecha_generacion"]|fecha(true) }}{% if acta["generada_por"] %} por {{ acta["generada_por"] }}{% endif %}</p>
+    <p class="text-muted">Versión {{ acta["version"] }} · generada {{ acta["fecha_generacion"]|fecha(true) }}{% if acta["generada_por"] %} por {{ acta["generada_por"] }}{% endif %}</p>
   </div>
-  <div class="heading-actions">
+  <div class="flex flex-wrap gap-2 [&_form]:m-0 max-[720px]:w-full">
     <a class="button button-secondary" href="{{ url_for('descargar_acta', id_sesion=sesion_c['id_sesion']) }}">Descargar .txt</a>
     <button class="button button-primary" type="button" data-print>Imprimir / PDF</button>
   </div>

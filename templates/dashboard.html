@@ -5,7 +5,7 @@
 <div class="page-heading">
   <div>
     <h1>Hola, {{ session["usuario"]["nombre"] }}</h1>
-    <p class="muted">{{ "Resumen de sus solicitudes ante el comité." if rol == "Investigador" else "Panel de seguimiento del Comité de Investigación." }}</p>
+    <p class="text-muted">{{ "Resumen de sus solicitudes ante el comité." if rol == "Investigador" else "Panel de seguimiento del Comité de Investigación." }}</p>
   </div>
   {% if rol == "Investigador" %}
   <a class="button button-primary" href="{{ url_for('nueva_solicitud') }}">Radicar solicitud</a>
@@ -14,7 +14,7 @@
   {% endif %}
 </div>
 
-<section class="kpis">
+<section class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 mb-[22px]">
   <a class="kpi kpi-total" href="{{ url_for('solicitudes') }}">
     <span class="kpi-label">Solicitudes recibidas</span>
     <strong>{{ total }}</strong>
@@ -27,24 +27,24 @@
   {% endfor %}
 </section>
 
-<div class="grid-2">
+<div class="grid grid-cols-2 gap-4 max-[1100px]:grid-cols-1">
   {% if rol in ROLES_COMITE %}
   <section class="panel">
-    <div class="panel-head"><h2>Mis revisiones pendientes</h2><a class="link small" href="{{ url_for('solicitudes', mias=1) }}">Ver todas</a></div>
+    <div class="panel-head"><h2>Mis revisiones pendientes</h2><a class="link text-[13px]" href="{{ url_for('solicitudes', mias=1) }}">Ver todas</a></div>
     {% if asignaciones %}
     <ul class="list">
       {% for a in asignaciones %}
       <li>
         <a href="{{ url_for('detalle_solicitud', id_solicitud=a['id_solicitud']) }}"><span class="code">{{ a["codigo"] }}</span> {{ a["titulo"] }}</a>
-        <span class="small {{ 'text-bad' if a['vencida'] else 'muted' }}">Límite: {{ a["fecha_limite"] or "sin fecha" }}{% if a["vencida"] %} · vencida{% endif %}</span>
+        <span class="text-[13px] {{ '!text-rose-400' if a['vencida'] else 'text-muted' }}">Límite: {{ a["fecha_limite"] or "sin fecha" }}{% if a["vencida"] %} · vencida{% endif %}</span>
       </li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted pad">No tiene revisiones asignadas pendientes.</p>{% endif %}
+    {% else %}<p class="text-muted m-0 px-4 py-3.5">No tiene revisiones asignadas pendientes.</p>{% endif %}
   </section>
   {% else %}
   <section class="panel">
-    <div class="panel-head"><h2>Mis solicitudes</h2><a class="link small" href="{{ url_for('solicitudes') }}">Ver todas</a></div>
+    <div class="panel-head"><h2>Mis solicitudes</h2><a class="link text-[13px]" href="{{ url_for('solicitudes') }}">Ver todas</a></div>
     {% if mis_solicitudes %}
     <ul class="list">
       {% for s in mis_solicitudes %}
@@ -54,12 +54,12 @@
       </li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted pad">Aún no ha radicado solicitudes.</p>{% endif %}
+    {% else %}<p class="text-muted m-0 px-4 py-3.5">Aún no ha radicado solicitudes.</p>{% endif %}
   </section>
   {% endif %}
 
   <section class="panel">
-    <div class="panel-head"><h2>Próximas sesiones del comité</h2>{% if rol in ROLES_COMITE %}<a class="link small" href="{{ url_for('sesiones') }}">Agenda</a>{% endif %}</div>
+    <div class="panel-head"><h2>Próximas sesiones del comité</h2>{% if rol in ROLES_COMITE %}<a class="link text-[13px]" href="{{ url_for('sesiones') }}">Agenda</a>{% endif %}</div>
     {% if sesiones %}
     <ul class="list">
       {% for se in sesiones %}
@@ -67,25 +67,25 @@
         {% if rol in ROLES_COMITE %}<a href="{{ url_for('detalle_sesion', id_sesion=se['id_sesion']) }}">{% else %}<span>{% endif %}
           <strong>Sesión {{ se["numero"] }}</strong> · {{ se["fecha"] }} {{ se["hora"] or "" }}
         {% if rol in ROLES_COMITE %}</a>{% else %}</span>{% endif %}
-        <span class="muted small">{{ se["lugar"] or "Lugar por definir" }} · {{ se["items"] }} en agenda</span>
+        <span class="text-muted text-[13px]">{{ se["lugar"] or "Lugar por definir" }} · {{ se["items"] }} en agenda</span>
       </li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted pad">No hay sesiones programadas.</p>{% endif %}
+    {% else %}<p class="text-muted m-0 px-4 py-3.5">No hay sesiones programadas.</p>{% endif %}
   </section>
 
   <section class="panel">
-    <div class="panel-head"><h2>Solicitudes con fecha vencida</h2><a class="link small" href="{{ url_for('solicitudes', vencidas=1) }}">Ver todas</a></div>
+    <div class="panel-head"><h2>Solicitudes con fecha vencida</h2><a class="link text-[13px]" href="{{ url_for('solicitudes', vencidas=1) }}">Ver todas</a></div>
     {% if vencidas %}
     <ul class="list">
       {% for s in vencidas %}
       <li>
         <a href="{{ url_for('detalle_solicitud', id_solicitud=s['id_solicitud']) }}"><span class="code">{{ s["codigo"] }}</span> {{ s["titulo"] }}</a>
-        <span class="small text-bad">Venció {{ s["fecha_limite"] }} · {{ s["estado"] }}</span>
+        <span class="text-[13px] !text-rose-400">Venció {{ s["fecha_limite"] }} · {{ s["estado"] }}</span>
       </li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted pad">No hay solicitudes vencidas. ✔</p>{% endif %}
+    {% else %}<p class="text-muted m-0 px-4 py-3.5">No hay solicitudes vencidas. ✔</p>{% endif %}
   </section>
 
   <section class="panel">
@@ -94,13 +94,13 @@
     <ul class="timeline compact">
       {% for a in actividad %}
       <li>
-        <span class="muted small">{{ a["fecha"]|fecha(true) }}</span>
+        <span class="text-muted text-[13px]">{{ a["fecha"]|fecha(true) }}</span>
         <div><strong>{{ a["accion"] }}</strong> · <a class="link" href="{{ url_for('detalle_solicitud', id_solicitud=a['id_solicitud']) }}">{{ a["codigo"] }}</a></div>
-        <div class="small muted">{{ a["usuario"] or "Sistema" }}{% if a["detalle"] %} — {{ a["detalle"]|truncate(110) }}{% endif %}</div>
+        <div class="text-[13px] text-muted">{{ a["usuario"] or "Sistema" }}{% if a["detalle"] %} — {{ a["detalle"]|truncate(110) }}{% endif %}</div>
       </li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted pad">Sin actividad registrada.</p>{% endif %}
+    {% else %}<p class="text-muted m-0 px-4 py-3.5">Sin actividad registrada.</p>{% endif %}
   </section>
 </div>
 {% endblock %}

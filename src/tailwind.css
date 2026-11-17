@@ -1,0 +1,132 @@
+/* ==========================================================================
+   Fuente de Tailwind CSS (se compila a static/tailwind.css con `npm run build:css`)
+
+   - @layer components: componentes reutilizables del sistema escritos con @apply
+     (botones, alertas, estados, tarjetas, KPIs...). Mantienen nombres de clase
+     estables porque static/app.js los usa (alert, is-loading, field-error...).
+   - Las plantillas usan además utilidades de Tailwind directamente para el layout
+     (grid, flex, gap, márgenes, tipografía y breakpoints responsive).
+   ========================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* ------------------------------ Botones ------------------------------- */
+  .button {
+    @apply inline-flex min-h-[40px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap
+           rounded-[10px] border border-solid border-transparent px-4 py-[9px] text-sm font-semibold
+           transition-[transform,background-color,box-shadow,border-color] duration-150
+           active:translate-y-px disabled:cursor-not-allowed disabled:opacity-[.45];
+  }
+  .button-primary   { @apply bg-accent text-accent-ink hover:bg-[#4cf0b6] hover:shadow-glow; }
+  .button-secondary { @apply border-line-strong bg-surface-2 text-fg hover:border-info hover:text-info; }
+  .button-danger    { @apply border-danger/40 bg-danger/[.13] text-[#ffd5dc] hover:bg-danger hover:text-white; }
+  .button-danger.solid { @apply bg-danger text-white; }
+  .button-small     { @apply min-h-[32px] rounded-lg px-[11px] py-[5px] text-[13px]; }
+  .button-wide      { @apply mt-3 min-h-[44px] w-full; }
+
+  /* Estado "cargando" que activa app.js al enviar formularios */
+  .button.is-loading { @apply pointer-events-none relative !text-transparent; }
+  .button.is-loading::after {
+    @apply absolute h-4 w-4 animate-spin rounded-full border-2 border-solid border-accent-ink border-r-transparent;
+    content: "";
+  }
+  .button-secondary.is-loading::after { @apply border-fg border-r-transparent; }
+
+  /* ------------------------------ Alertas ------------------------------- */
+  .alert {
+    @apply relative mx-auto mb-5 flex animate-entrar items-center gap-2.5 rounded-field border border-solid
+           py-[13px] pl-4 pr-11 font-medium;
+  }
+  .alert::before { @apply font-extrabold; }
+  .alert-success { @apply border-accent/35 bg-accent/[.12] text-emerald-200; }
+  .alert-success::before { content: "✓"; @apply text-accent; }
+  .alert-error { @apply border-danger/40 bg-danger/[.13] text-rose-200; }
+  .alert-error::before { content: "!"; @apply text-danger; }
+  .alert-close {
+    @apply absolute right-2.5 top-1/2 h-7 w-7 -translate-y-1/2 cursor-pointer rounded-[7px] border-0
+           bg-transparent text-xl leading-none text-inherit opacity-70 hover:bg-white/[.08] hover:opacity-100;
+  }
+  .alert.is-leaving { @apply -translate-y-1.5 opacity-0 transition-[opacity,transform] duration-200; }
+
+  /* --------------------------- Estados (semáforo) ------------------------ */
+  .status {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-solid
+           border-info/30 bg-info/[.12] px-2.5 py-[3px] text-xs font-semibold text-sky-300;
+  }
+  .status::before { content: ""; @apply h-1.5 w-1.5 rounded-full bg-current; }
+  .status.st-warn   { @apply border-warn/30 bg-warn/[.11] text-amber-300; }
+  .status.st-alert  { @apply border-orange-400/30 bg-orange-400/[.12] text-orange-300; }
+  .status.st-purple { @apply border-violet-400/30 bg-violet-400/[.13] text-violet-300; }
+  .status.st-ok     { @apply border-accent/30 bg-accent/[.12] text-emerald-300; }
+  .status.st-bad    { @apply border-danger/35 bg-danger/[.13] text-rose-300; }
+  .status.st-muted  { @apply border-slate-400/30 bg-slate-400/[.12] text-slate-400; }
+
+  .dot { @apply mr-[7px] inline-block h-[9px] w-[9px] rounded-full; }
+  .dot.st-info   { @apply bg-info shadow-[0_0_8px_#38bdf8]; }
+  .dot.st-warn   { @apply bg-warn shadow-[0_0_8px_#fbbf24]; }
+  .dot.st-alert  { @apply bg-orange-400 shadow-[0_0_8px_#fb923c]; }
+  .dot.st-purple { @apply bg-violet-400 shadow-[0_0_8px_#a78bfa]; }
+  .dot.st-ok     { @apply bg-accent shadow-[0_0_8px_#2ee6a6]; }
+  .dot.st-bad    { @apply bg-danger shadow-[0_0_8px_#f43f5e]; }
+  .dot.st-muted  { @apply bg-muted; }
+
+  .prio { @apply inline-block rounded-[7px] border border-solid border-line-strong px-[9px] py-[3px] text-xs font-semibold text-soft; }
+  .prio-alta  { @apply border-danger/45 text-rose-300; }
+  .prio-media { @apply border-warn/40 text-amber-300; }
+  .prio-baja  { @apply text-muted; }
+
+  /* ------------------------- Tarjetas y encabezados ---------------------- */
+  .login-card, .form-card, .panel { @apply rounded-card border border-solid border-line bg-surface shadow-card; }
+  .login-card {
+    @apply relative w-[min(100%,440px)] bg-[rgb(15_20_26/88%)] p-9 backdrop-blur-sm max-[720px]:px-5 max-[720px]:py-[26px];
+  }
+  .login-card.wide { @apply w-[min(100%,660px)]; }
+  .login-card::before { content: ""; @apply absolute inset-x-0 top-0 h-[3px] rounded-t-card bg-brand; }
+  .form-card { @apply mx-auto w-[min(100%,720px)] p-[30px] max-[720px]:px-5 max-[720px]:py-[26px]; }
+  .panel { @apply overflow-hidden; }
+  .panel-head { @apply flex items-center justify-between border-0 border-b border-solid border-line bg-surface-2 px-[18px] py-[15px]; }
+
+  .page-heading {
+    @apply mb-6 flex items-center justify-between gap-5 max-[720px]:flex-col max-[720px]:items-start;
+  }
+  .page-heading h1 { @apply mb-1.5 mt-0 text-[28px] font-bold; }
+  .page-heading p { @apply m-0; }
+  .page-heading .button { @apply max-[720px]:w-full; }
+
+  .eyebrow { @apply mb-1.5 mt-0 text-xs font-bold uppercase tracking-[.12em] text-info; }
+  .link { @apply font-semibold text-info hover:underline; }
+  .empty-state { @apply px-5 py-14 text-center; }
+  .empty-state h1, .empty-state h2 { @apply mb-2 mt-0; }
+  .empty-state .button { @apply mt-3; }
+
+  /* -------------------------------- KPIs -------------------------------- */
+  .kpi {
+    @apply relative flex flex-col gap-2 rounded-card border border-solid border-line bg-surface px-[18px] py-4
+           transition-[border-color,transform] duration-150;
+  }
+  a.kpi { @apply hover:-translate-y-0.5 hover:border-accent; }
+  .kpi strong { @apply font-display text-[30px] leading-none text-fg; }
+  .kpi-label { @apply text-[12.5px] font-semibold text-muted; }
+  .kpi-total { @apply border-accent/45; background: linear-gradient(135deg, rgb(46 230 166 / 18%), rgb(56 189 248 / 14%)), var(--surface); }
+  .kpi-total strong { @apply text-accent; }
+  .kpi-total .kpi-label { @apply text-soft; }
+
+  /* --------------------------- Notas y avisos --------------------------- */
+  .note { @apply mb-2.5 rounded-field border border-solid border-line bg-bg-soft px-3.5 py-3; }
+  .note p { @apply mb-0 mt-2 text-soft; }
+  .note-warn { @apply border-orange-400/45 bg-orange-400/[.07]; }
+  .callout { @apply mb-5 rounded-card border border-solid border-orange-400/45 bg-orange-400/[.08] px-[22px] py-[18px]; }
+  .callout h2 { @apply mb-2 mt-0 text-lg text-orange-300; }
+  .callout p { @apply my-1; }
+
+  /* ---------------------- Validación en el cliente ---------------------- */
+  .field-error { @apply mt-0.5 flex animate-entrar items-center gap-1.5 text-[12.5px] font-medium text-rose-300; }
+  .field-error::before {
+    content: "!";
+    @apply inline-grid h-[15px] w-[15px] place-items-center rounded-full bg-danger text-[10px] font-extrabold text-white;
+  }
+  .counter { @apply -mt-0.5 self-end text-xs tabular-nums text-muted; }
+  .counter.near { @apply text-warn; }
+}

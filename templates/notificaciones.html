@@ -4,7 +4,7 @@
 <div class="page-heading">
   <div>
     <h1>Notificaciones</h1>
-    <p class="muted">Avisos sobre cambios de estado, asignaciones, ajustes, sesiones y decisiones.</p>
+    <p class="text-muted">Avisos sobre cambios de estado, asignaciones, ajustes, sesiones y decisiones.</p>
   </div>
   {% if notificaciones_pendientes %}
   <form method="post" action="{{ url_for('leer_notificaciones') }}">
@@ -18,7 +18,7 @@
     {% for n in notificaciones %}
     <li class="{{ 'unread' if not n['leida'] }}">
       <a href="{{ url_for('abrir_notificacion', id_notificacion=n['id_notificacion']) }}">{{ n["mensaje"] }}</a>
-      <span class="small muted nowrap">{{ n["fecha"]|fecha(true) }}</span>
+      <span class="text-[13px] text-muted whitespace-nowrap">{{ n["fecha"]|fecha(true) }}</span>
     </li>
     {% endfor %}
   </ul>

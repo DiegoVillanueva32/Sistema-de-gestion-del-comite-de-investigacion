@@ -5,7 +5,7 @@
   <div class="page-heading">
     <div>
       <h1>Mi perfil</h1>
-      <p class="muted">{{ perfil["correo"] }} · {{ perfil["rol"] }}</p>
+      <p class="text-muted">{{ perfil["correo"] }} · {{ perfil["rol"] }}</p>
     </div>
   </div>
   <form method="post" class="form-grid">
@@ -32,10 +32,10 @@
     </div>
     {% endif %}
     <div class="full">
-      <label for="password">Nueva contraseña <small class="muted">(dejar vacía para conservarla)</small></label>
+      <label for="password">Nueva contraseña <small class="text-muted">(dejar vacía para conservarla)</small></label>
       <input id="password" name="password" type="password" minlength="6" autocomplete="new-password">
     </div>
-    <div class="full form-actions">
+    <div class="full flex justify-end gap-2.5 mt-5">
       <button class="button button-primary" type="submit">Guardar cambios</button>
     </div>
   </form>

@@ -1,0 +1,12 @@
+{
+  "name": "comite-investigacion",
+  "private": true,
+  "description": "Compilación de estilos Tailwind CSS del Sistema de Gestión del Comité de Investigación",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./static/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.css -o ./static/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

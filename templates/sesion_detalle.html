@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Sesión {{ sesion_c["numero"] }} | Comité de Investigación{% endblock %}
 {% block content %}
-<p class="crumbs"><a class="link" href="{{ url_for('sesiones') }}">Sesiones</a> / {{ sesion_c["numero"] }}</p>
+<p class="mt-0 mb-3 text-[13.5px] text-muted"><a class="link" href="{{ url_for('sesiones') }}">Sesiones</a> / {{ sesion_c["numero"] }}</p>
 <div class="page-heading">
   <div>
     <h1>Sesión {{ sesion_c["numero"] }}</h1>
-    <p class="muted">{{ sesion_c["fecha"] }}{% if sesion_c["hora"] %} · {{ sesion_c["hora"] }}{% endif %} · {{ sesion_c["lugar"] or "Lugar por definir" }}
+    <p class="text-muted">{{ sesion_c["fecha"] }}{% if sesion_c["hora"] %} · {{ sesion_c["hora"] }}{% endif %} · {{ sesion_c["lugar"] or "Lugar por definir" }}
       <span class="status {{ sesion_c['estado']|clase_estado }}">{{ sesion_c["estado"] }}</span></p>
   </div>
-  <div class="heading-actions">
+  <div class="flex flex-wrap gap-2 [&_form]:m-0 max-[720px]:w-full">
     {% if acta %}<a class="button button-secondary" href="{{ url_for('ver_acta', id_sesion=sesion_c['id_sesion']) }}">Ver {{ acta["numero"] }}</a>{% endif %}
     {% if puede_gestionar %}
     <a class="button button-secondary" href="{{ url_for('editar_sesion', id_sesion=sesion_c['id_sesion']) }}">Editar</a>
@@ -23,7 +23,7 @@
 <section class="panel section">
   <h2>Consolidar solicitudes para la sesión</h2>
   {% if disponibles %}
-  <p class="muted small">Hay {{ disponibles|length }} solicitud(es) en estado «Lista para comité» sin agendar.</p>
+  <p class="text-muted text-[13px]">Hay {{ disponibles|length }} solicitud(es) en estado «Lista para comité» sin agendar.</p>
   <div class="inline-form">
     <form method="post" action="{{ url_for('consolidar_agenda', id_sesion=sesion_c['id_sesion']) }}">
       <button class="button button-primary" type="submit">Consolidar todas ({{ disponibles|length }})</button>
@@ -37,7 +37,7 @@
     </form>
   </div>
   {% else %}
-  <p class="muted">No hay solicitudes «Lista para comité» pendientes de agendar.</p>
+  <p class="text-muted">No hay solicitudes «Lista para comité» pendientes de agendar.</p>
   {% endif %}
 </section>
 {% endif %}
@@ -52,23 +52,23 @@
         <span class="agenda-n">{{ loop.index }}</span>
         <a class="code" href="{{ url_for('detalle_solicitud', id_solicitud=item['id_solicitud']) }}">{{ item["codigo"] }}</a>
         <strong>{{ item["titulo"] }}</strong>
-        <div class="small muted">{{ item["tipo"] }} · {{ item["investigador"] }} · Prioridad {{ item["prioridad"] }}</div>
-        <div class="small">Conceptos: {{ item["conceptos"] or "sin conceptos registrados" }}</div>
+        <div class="text-[13px] text-muted">{{ item["tipo"] }} · {{ item["investigador"] }} · Prioridad {{ item["prioridad"] }}</div>
+        <div class="text-[13px]">Conceptos: {{ item["conceptos"] or "sin conceptos registrados" }}</div>
       </div>
       <div>
         {% if item["decision"] %}<span class="status {{ item['decision']|clase_estado }}">Decisión: {{ item["decision"] }}</span>
         {% else %}<span class="status st-muted">Sin decisión</span>{% endif %}
       </div>
     </div>
-    {% if item["observacion_decision"] %}<p class="small prewrap">{{ item["observacion_decision"] }}</p>{% endif %}
+    {% if item["observacion_decision"] %}<p class="text-[13px] whitespace-pre-wrap [overflow-wrap:anywhere]">{{ item["observacion_decision"] }}</p>{% endif %}
     {% if puede_gestionar %}
     <div class="inline-form">
-      <form class="inline-form grow" method="post" action="{{ url_for('registrar_decision', id_sesion=sesion_c['id_sesion']) }}">
+      <form class="inline-form flex-[1_1_220px]" method="post" action="{{ url_for('registrar_decision', id_sesion=sesion_c['id_sesion']) }}">
         <input type="hidden" name="id_solicitud" value="{{ item['id_solicitud'] }}">
         <select name="decision" required aria-label="Decisión">
           {% for d in decisiones %}<option {% if item["decision"] == d %}selected{% endif %}>{{ d }}</option>{% endfor %}
         </select>
-        <input class="grow" name="observacion" value="{{ item['observacion_decision'] or '' }}" placeholder="Observaciones / condiciones de la decisión" aria-label="Observaciones">
+        <input class="flex-[1_1_220px]" name="observacion" value="{{ item['observacion_decision'] or '' }}" placeholder="Observaciones / condiciones de la decisión" aria-label="Observaciones">
         <button class="button button-primary button-small" type="submit">{{ "Actualizar" if item["decision"] else "Registrar decisión" }}</button>
       </form>
       {% if not item["decision"] %}
@@ -81,7 +81,7 @@
   </div>
   {% endfor %}
   {% else %}
-  <p class="muted">La agenda está vacía.</p>
+  <p class="text-muted">La agenda está vacía.</p>
   {% endif %}
 </section>
 
@@ -89,7 +89,7 @@
 <section class="panel section">
   <h2>{{ "Regenerar acta" if acta else "Generar acta" }}</h2>
   {% if pendientes %}
-  <p class="text-bad small">Faltan {{ pendientes }} decisión(es) por registrar antes de generar el acta.</p>
+  <p class="!text-rose-400 text-[13px]">Faltan {{ pendientes }} decisión(es) por registrar antes de generar el acta.</p>
   {% endif %}
   <form class="form-stack" method="post" action="{{ url_for('generar_acta', id_sesion=sesion_c['id_sesion']) }}">
     <label for="asistentes">Asistentes (uno por línea)</label>
@@ -97,7 +97,7 @@
     <label for="notas">Proposiciones y varios</label>
     <textarea id="notas" name="notas" rows="3"></textarea>
     <div><button class="button button-primary" type="submit" {% if pendientes %}disabled{% endif %}>{{ "Regenerar acta (nueva versión)" if acta else "Generar acta" }}</button></div>
-    <span class="small muted">El acta consolida automáticamente la agenda, los conceptos y las decisiones; la sesión queda marcada como «Realizada».</span>
+    <span class="text-[13px] text-muted">El acta consolida automáticamente la agenda, los conceptos y las decisiones; la sesión queda marcada como «Realizada».</span>
   </form>
 </section>
 {% endif %}

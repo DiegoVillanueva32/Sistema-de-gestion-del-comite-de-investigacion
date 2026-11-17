@@ -4,7 +4,7 @@
 <div class="page-heading">
   <div>
     <h1>Usuarios</h1>
-    <p class="muted">Administración de cuentas y roles.</p>
+    <p class="text-muted">Administración de cuentas y roles.</p>
   </div>
   <a class="button button-primary" href="{{ url_for('nuevo_usuario') }}">Nuevo usuario</a>
 </div>
@@ -27,7 +27,7 @@
           <td>{{ usuario["rol"] }}</td>
           <td><span class="status {{ 'st-ok' if usuario['activo'] else 'st-muted' }}">{{ "Activo" if usuario["activo"] else "Inactivo" }}</span></td>
           <td>
-            <div class="table-actions">
+            <div class="flex items-center gap-1.5 [&_form]:m-0">
               <a class="button button-secondary button-small" href="{{ url_for('editar_usuario', id_usuario=usuario['id_usuario']) }}">Editar</a>
               {% if usuario["id_usuario"] != session["usuario"]["id_usuario"] %}
               <form action="{{ url_for('eliminar_usuario', id_usuario=usuario['id_usuario']) }}" method="post" data-confirm="Se eliminará la cuenta de {{ usuario['nombre'] }}. Si tiene registros asociados, solo se desactivará.">

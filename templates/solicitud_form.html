@@ -6,7 +6,7 @@
   <div class="page-heading">
     <div>
       <h1>{{ "Editar solicitud " ~ solicitud["codigo"] if solicitud else "Radicar solicitud" }}</h1>
-      <p class="muted">Los campos marcados con * son obligatorios.{% if not solicitud %} Después de radicar podrá cargar los documentos requeridos.{% endif %}</p>
+      <p class="text-muted">Los campos marcados con * son obligatorios.{% if not solicitud %} Después de radicar podrá cargar los documentos requeridos.{% endif %}</p>
     </div>
   </div>
   <form method="post" class="form-stack" data-warn-unsaved>
@@ -24,7 +24,7 @@
         <strong>Documentos requeridos para «{{ tipo["nombre"] }}»:</strong>
         <ul>
           {% for r in tipo["requisitos"] %}
-          <li>{{ r["nombre"] }}{% if not r["obligatorio"] %} <span class="muted">(opcional)</span>{% endif %}</li>
+          <li>{{ r["nombre"] }}{% if not r["obligatorio"] %} <span class="text-muted">(opcional)</span>{% endif %}</li>
           {% endfor %}
         </ul>
       </div>
@@ -52,7 +52,7 @@
       </div>
     </div>
     {% endif %}
-    <div class="form-actions">
+    <div class="flex justify-end gap-2.5 mt-5">
       <a class="button button-secondary" href="{{ url_for('detalle_solicitud', id_solicitud=solicitud['id_solicitud']) if solicitud else url_for('solicitudes') }}">Cancelar</a>
       <button class="button button-primary" type="submit">{{ "Guardar" if solicitud else "Radicar" }}</button>
     </div>

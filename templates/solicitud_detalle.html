@@ -2,7 +2,7 @@
 {% block title %}{{ s["codigo"] }} | Comité de Investigación{% endblock %}
 {% block content %}
 {% set rol = session["usuario"]["rol"] %}
-<p class="crumbs"><a class="link" href="{{ url_for('solicitudes') }}">Solicitudes</a> / {{ s["codigo"] }}</p>
+<p class="mt-0 mb-3 text-[13.5px] text-muted"><a class="link" href="{{ url_for('solicitudes') }}">Solicitudes</a> / {{ s["codigo"] }}</p>
 <div class="page-heading">
   <div>
     <p class="eyebrow">{{ s["codigo"] }} · {{ s["tipo"] }}</p>
@@ -13,7 +13,7 @@
       {% if s["vencida"] %}<span class="status st-bad">Fecha límite vencida</span>{% endif %}
     </p>
   </div>
-  <div class="heading-actions">
+  <div class="flex flex-wrap gap-2 [&_form]:m-0 max-[720px]:w-full">
     {% if puede_editar %}<a class="button button-secondary" href="{{ url_for('editar_solicitud', id_solicitud=s['id_solicitud']) }}">Editar</a>{% endif %}
     {% if puede_gestionar %}
     <form action="{{ url_for('eliminar_solicitud', id_solicitud=s['id_solicitud']) }}" method="post" data-confirm="Se eliminará la solicitud con sus documentos e historial. Esta acción no se puede deshacer.">
@@ -36,12 +36,12 @@
 <section class="callout">
   <h2>{{ "Faltan documentos o requisitos" if s["estado"] == "Pendiente por documentos" else "El comité solicitó ajustes" }}</h2>
   {% for o in observaciones if o["tipo"] == "Solicitud de ajuste" and not o["atendida"] %}
-  <p>• {{ o["descripcion"] }} <span class="muted small">({{ o["usuario"] }}, {{ o["fecha"]|fecha }})</span></p>
+  <p>• {{ o["descripcion"] }} <span class="text-muted text-[13px]">({{ o["usuario"] }}, {{ o["fecha"]|fecha }})</span></p>
   {% endfor %}
   {% for r in requisitos if r["obligatorio"] and r["cumple"] == 0 %}
   <p>• Requisito pendiente: <strong>{{ r["nombre"] }}</strong>{% if r["observacion"] %} — {{ r["observacion"] }}{% endif %}</p>
   {% endfor %}
-  <p class="small">Cargue los documentos corregidos en la sección <a class="link" href="#documentos">Documentos</a> y luego reenvíe la solicitud.</p>
+  <p class="text-[13px]">Cargue los documentos corregidos en la sección <a class="link" href="#documentos">Documentos</a> y luego reenvíe la solicitud.</p>
   <form method="post" action="{{ url_for('responder_ajustes', id_solicitud=s['id_solicitud']) }}" class="form-stack">
     <label for="comentario">Comentario para el comité (opcional)</label>
     <textarea id="comentario" name="comentario" rows="2" placeholder="Describa los ajustes realizados"></textarea>
@@ -54,7 +54,7 @@
   <div class="detail-main">
     <section class="panel section">
       <h2>Resumen</h2>
-      <p class="prewrap">{{ s["descripcion"] or "Sin descripción." }}</p>
+      <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ s["descripcion"] or "Sin descripción." }}</p>
     </section>
 
     {# ---------------- Requisitos y validación ---------------- #}
@@ -68,14 +68,14 @@
           <tbody>
             {% for r in requisitos %}
             <tr>
-              <td>{{ r["nombre"] }}{% if not r["obligatorio"] %} <span class="muted small">(opcional)</span>{% endif %}</td>
+              <td>{{ r["nombre"] }}{% if not r["obligatorio"] %} <span class="text-muted text-[13px]">(opcional)</span>{% endif %}</td>
               <td>{% if r["documentos"] %}<span class="status st-ok">{{ r["documentos"] }}</span>{% else %}<span class="status st-muted">0</span>{% endif %}</td>
               {% if puede_gestionar %}
               <td><input type="checkbox" name="cumple_{{ r['id_requisito'] }}" value="1" aria-label="Cumple {{ r['nombre'] }}" {% if r["cumple"] == 1 or (r["cumple"] is none and r["documentos"]) %}checked{% endif %}></td>
               <td><input class="input-sm" name="obs_{{ r['id_requisito'] }}" value="{{ r['observacion'] or '' }}" placeholder="Observación"></td>
               {% else %}
-              <td>{% if r["cumple"] is none %}<span class="muted small">Sin validar</span>{% elif r["cumple"] %}<span class="status st-ok">Sí</span>{% else %}<span class="status st-bad">No</span>{% endif %}</td>
-              <td class="small">{{ r["observacion"] or "" }}</td>
+              <td>{% if r["cumple"] is none %}<span class="text-muted text-[13px]">Sin validar</span>{% elif r["cumple"] %}<span class="status st-ok">Sí</span>{% else %}<span class="status st-bad">No</span>{% endif %}</td>
+              <td class="text-[13px]">{{ r["observacion"] or "" }}</td>
               {% endif %}
             </tr>
             {% endfor %}
@@ -83,13 +83,13 @@
         </table>
       </div>
       {% set ultima = requisitos|selectattr("fecha_validacion")|map(attribute="fecha_validacion")|list %}
-      <p class="small muted">{% if ultima %}Última validación: {{ ultima|max|fecha(true) }} por {{ (requisitos|selectattr("validado_por")|first)["validado_por"] }}.{% else %}Los requisitos aún no han sido validados.{% endif %}</p>
+      <p class="text-[13px] text-muted">{% if ultima %}Última validación: {{ ultima|max|fecha(true) }} por {{ (requisitos|selectattr("validado_por")|first)["validado_por"] }}.{% else %}Los requisitos aún no han sido validados.{% endif %}</p>
       {% if puede_gestionar %}
         <button class="button button-primary" type="submit">Registrar validación</button>
-        <span class="small muted">Si falta algún requisito obligatorio, la solicitud pasa a «Pendiente por documentos» y se notifica al investigador.</span>
+        <span class="text-[13px] text-muted">Si falta algún requisito obligatorio, la solicitud pasa a «Pendiente por documentos» y se notifica al investigador.</span>
       </form>
       {% endif %}
-      {% else %}<p class="muted">Este tipo de solicitud no tiene requisitos configurados.</p>{% endif %}
+      {% else %}<p class="text-muted">Este tipo de solicitud no tiene requisitos configurados.</p>{% endif %}
     </section>
 
     {# ---------------- Documentos ---------------- #}
@@ -105,14 +105,14 @@
               <td>{{ d["tipo"] }}</td>
               <td><a class="link" href="{{ url_for('descargar_documento', id_documento=d['id_documento']) }}">{{ d["nombre_original"] or d["nombre"] }}</a></td>
               <td>v{{ d["version"] }}</td>
-              <td class="small">{{ d["usuario"] or "—" }}</td>
-              <td class="nowrap small">{{ d["fecha_carga"]|fecha(true) }}</td>
+              <td class="text-[13px]">{{ d["usuario"] or "—" }}</td>
+              <td class="whitespace-nowrap text-[13px]">{{ d["fecha_carga"]|fecha(true) }}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-      {% else %}<p class="muted">No se han cargado documentos.</p>{% endif %}
+      {% else %}<p class="text-muted">No se han cargado documentos.</p>{% endif %}
       {% if puede_cargar %}
       <form class="upload" method="post" enctype="multipart/form-data" action="{{ url_for('cargar_documento', id_solicitud=s['id_solicitud']) }}">
         <select name="id_requisito" aria-label="Requisito">
@@ -121,7 +121,7 @@
         </select>
         <input type="file" name="archivo" required aria-label="Archivo" data-max-mb="16" data-ext="{{ extensiones|replace(' ', '') }}" accept=".{{ extensiones|replace(' ', '')|replace(',', ',.') }}">
         <button class="button button-primary" type="submit">Cargar</button>
-        <span class="small muted full">Formatos: {{ extensiones }}. Máximo 16 MB. Si carga de nuevo un requisito se guarda como nueva versión.</span>
+        <span class="text-[13px] text-muted full">Formatos: {{ extensiones }}. Máximo 16 MB. Si carga de nuevo un requisito se guarda como nueva versión.</span>
       </form>
       {% endif %}
     </section>
@@ -135,15 +135,15 @@
       <ul class="list tight">
         {% for a in asignaciones %}
         <li>
-          <span><strong>{{ a["revisor"] }}</strong> <span class="muted small">asignado {{ a["fecha_asignacion"]|fecha }}</span></span>
+          <span><strong>{{ a["revisor"] }}</strong> <span class="text-muted text-[13px]">asignado {{ a["fecha_asignacion"]|fecha }}</span></span>
           <span>
-            <span class="small {{ 'text-bad' if a['vencida'] else 'muted' }}">Límite: {{ a["fecha_limite"] or "—" }}</span>
+            <span class="text-[13px] {{ '!text-rose-400' if a['vencida'] else 'text-muted' }}">Límite: {{ a["fecha_limite"] or "—" }}</span>
             <span class="status {{ a['estado']|clase_estado }}">{{ a["estado"] }}</span>
           </span>
         </li>
         {% endfor %}
       </ul>
-      {% else %}<p class="muted">Sin responsables asignados.</p>{% endif %}
+      {% else %}<p class="text-muted">Sin responsables asignados.</p>{% endif %}
       {% if puede_gestionar %}
       <form class="inline-form" method="post" action="{{ url_for('asignar_revisor', id_solicitud=s['id_solicitud']) }}">
         <select name="id_revisor" required aria-label="Integrante del comité">
@@ -159,11 +159,11 @@
       {% if revisiones %}
       {% for r in revisiones %}
       <div class="note">
-        <div><strong>{{ r["revisor"] }}</strong> <span class="status {{ r['concepto']|clase_estado }}">{{ r["concepto"] }}</span> <span class="muted small">{{ r["fecha"]|fecha(true) }}</span></div>
-        {% if r["observacion"] %}<p class="prewrap">{{ r["observacion"] }}</p>{% endif %}
+        <div><strong>{{ r["revisor"] }}</strong> <span class="status {{ r['concepto']|clase_estado }}">{{ r["concepto"] }}</span> <span class="text-muted text-[13px]">{{ r["fecha"]|fecha(true) }}</span></div>
+        {% if r["observacion"] %}<p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ r["observacion"] }}</p>{% endif %}
       </div>
       {% endfor %}
-      {% else %}<p class="muted">Aún no hay conceptos.</p>{% endif %}
+      {% else %}<p class="text-muted">Aún no hay conceptos.</p>{% endif %}
       {% if puede_revisar %}
       <form class="form-stack boxed" method="post" action="{{ url_for('registrar_revision', id_solicitud=s['id_solicitud']) }}">
         <label for="concepto">Emitir concepto</label>
@@ -184,13 +184,13 @@
       {% for o in observaciones %}
       <div class="note {{ 'note-warn' if o['tipo'] == 'Solicitud de ajuste' }}">
         <div>
-          <strong>{{ o["usuario"] }}</strong> <span class="muted small">{{ o["rol"] }} · {{ o["fecha"]|fecha(true) }}</span>
+          <strong>{{ o["usuario"] }}</strong> <span class="text-muted text-[13px]">{{ o["rol"] }} · {{ o["fecha"]|fecha(true) }}</span>
           <span class="status {{ 'st-alert' if o['tipo'] == 'Solicitud de ajuste' else 'st-info' }}">{{ o["tipo"] }}</span>
           {% if o["tipo"] == "Solicitud de ajuste" %}<span class="status {{ 'st-ok' if o['atendida'] else 'st-warn' }}">{{ "Atendida" if o["atendida"] else "Pendiente" }}</span>{% endif %}
         </div>
-        <p class="prewrap">{{ o["descripcion"] }}</p>
+        <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ o["descripcion"] }}</p>
       </div>
-      {% else %}<p class="muted">Sin observaciones.</p>{% endfor %}
+      {% else %}<p class="text-muted">Sin observaciones.</p>{% endfor %}
       <form class="form-stack boxed" method="post" action="{{ url_for('agregar_observacion', id_solicitud=s['id_solicitud']) }}">
         <label for="descripcion">Nueva observación</label>
         <textarea id="descripcion" name="descripcion" rows="3" required></textarea>
@@ -198,7 +198,7 @@
         <select name="tipo" aria-label="Tipo de observación">
           {% for t in tipos_obs %}<option>{{ t }}</option>{% endfor %}
         </select>
-        <span class="small muted">«Solicitud de ajuste» cambia el estado a «Requiere ajustes» y notifica al investigador.</span>
+        <span class="text-[13px] text-muted">«Solicitud de ajuste» cambia el estado a «Requiere ajustes» y notifica al investigador.</span>
         {% endif %}
         <div><button class="button button-primary" type="submit">Agregar</button></div>
       </form>
@@ -210,12 +210,12 @@
       {% for d in decisiones %}
       <div class="note">
         <div><span class="status {{ d['decision']|clase_estado }}">{{ d["decision"] }}</span>
-          <span class="muted small">Sesión {{ d["sesion"] or "—" }} ({{ d["fecha_sesion"] or d["fecha"]|fecha }})</span>
-          {% if d["id_sesion"] and rol in ROLES_COMITE %}<a class="link small" href="{{ url_for('detalle_sesion', id_sesion=d['id_sesion']) }}">Ver sesión</a>{% endif %}
+          <span class="text-muted text-[13px]">Sesión {{ d["sesion"] or "—" }} ({{ d["fecha_sesion"] or d["fecha"]|fecha }})</span>
+          {% if d["id_sesion"] and rol in ROLES_COMITE %}<a class="link text-[13px]" href="{{ url_for('detalle_sesion', id_sesion=d['id_sesion']) }}">Ver sesión</a>{% endif %}
         </div>
-        {% if d["observacion"] %}<p class="prewrap">{{ d["observacion"] }}</p>{% endif %}
+        {% if d["observacion"] %}<p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ d["observacion"] }}</p>{% endif %}
       </div>
-      {% else %}<p class="muted">Aún no hay decisiones sobre esta solicitud.</p>{% endfor %}
+      {% else %}<p class="text-muted">Aún no hay decisiones sobre esta solicitud.</p>{% endfor %}
     </section>
   </div>
 
@@ -234,7 +234,7 @@
       <h2>Fechas</h2>
       <dl class="facts">
         <dt>Radicación</dt><dd>{{ s["fecha"]|fecha(true) }}</dd>
-        <dt>Fecha límite</dt><dd class="{{ 'text-bad' if s['vencida'] }}">{{ s["fecha_limite"] or "Sin definir" }}</dd>
+        <dt>Fecha límite</dt><dd class="{{ '!text-rose-400' if s['vencida'] }}">{{ s["fecha_limite"] or "Sin definir" }}</dd>
         <dt>Responsables</dt><dd>{{ s["responsables"] or "—" }}</dd>
       </dl>
     </section>
@@ -249,7 +249,7 @@
         <textarea name="comentario" rows="2" placeholder="Motivo del cambio (opcional)" aria-label="Motivo"></textarea>
         <button class="button button-secondary" type="submit">Actualizar estado</button>
       </form>
-      <p class="small muted">Use «Lista para comité» para que la solicitud pueda incluirse en la agenda de una sesión.</p>
+      <p class="text-[13px] text-muted">Use «Lista para comité» para que la solicitud pueda incluirse en la agenda de una sesión.</p>
     </section>
     {% endif %}
 
@@ -258,12 +258,12 @@
       <ul class="timeline">
         {% for h in historial %}
         <li>
-          <span class="muted small">{{ h["fecha"]|fecha(true) }}</span>
+          <span class="text-muted text-[13px]">{{ h["fecha"]|fecha(true) }}</span>
           <div><strong>{{ h["accion"] }}</strong></div>
-          <div class="small">{{ h["usuario"] or "Sistema" }}</div>
-          {% if h["detalle"] %}<div class="small muted">{{ h["detalle"] }}</div>{% endif %}
+          <div class="text-[13px]">{{ h["usuario"] or "Sistema" }}</div>
+          {% if h["detalle"] %}<div class="text-[13px] text-muted">{{ h["detalle"] }}</div>{% endif %}
         </li>
-        {% else %}<li class="muted">Sin actuaciones registradas.</li>{% endfor %}
+        {% else %}<li class="text-muted">Sin actuaciones registradas.</li>{% endfor %}
       </ul>
     </section>
   </aside>

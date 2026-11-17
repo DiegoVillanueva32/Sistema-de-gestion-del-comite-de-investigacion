@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232ee6a6'/%3E%3Cpath d='M12 8h8M14 8v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V8' fill='none' stroke='%2304130d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  {#- style.css: tema y reset propios · tailwind.css: componentes (@apply) y utilidades de Tailwind (se carga después para que las utilidades tengan prioridad) -#}
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='tailwind.css') }}">
 </head>
 <body>
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
